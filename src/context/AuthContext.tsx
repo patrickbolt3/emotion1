@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, metadata?: { role: string, firstName?: string, lastName?: string }) => {
     console.log("Signing up with metadata:", metadata);
     
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -51,28 +51,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     });
     
-    if (error) {
-      console.error("Signup error:", error);
-      return { error };
+    if (signUpError) {
+      console.error("Signup error:", signUpError);
+      return { error: signUpError };
     }
 
     if (data.user) {
       console.log("User created successfully:", data.user.id);
       
       // Wait a moment for the trigger to create the profile
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Verify profile was created, if not create it manually
+      // Check if profile was created by trigger
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('id')
         .eq('id', data.user.id)
         .single();
       
-      if (profileError && profileError.code === 'PGRST116') {
-        // Profile doesn't exist, create it manually
+      if (profileError || !profile) {
+        // Profile doesn't exist or there was an error, create it manually
         console.log("Creating profile manually for user:", data.user.id);
-        const { error: insertError } = await supabase
+        
+        const { error: manualInsertError } = await supabase
           .from('profiles')
           .insert({
             id: data.user.id,
@@ -81,14 +82,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             role: metadata?.role || 'respondent',
           });
         
-        if (insertError) {
-          console.error("Error creating profile manually:", insertError);
-          return { error: insertError };
+        if (manualInsertError) {
+          console.error("Error creating profile manually:", manualInsertError);
+          // Don't fail registration if profile creation fails
+          console.warn("Profile creation failed, but user was created successfully");
         }
+      } else {
+        console.log("Profile created successfully by trigger");
       }
     }
     
-    return { error };
+    return { error: null };
   };
 
   const signIn = async (email: string, password: string) => {
