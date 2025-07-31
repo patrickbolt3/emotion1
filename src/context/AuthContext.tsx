@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, metadata?: { role: string, firstName?: string, lastName?: string }) => {
     console.log("Signing up with metadata:", metadata);
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -50,6 +50,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       },
     });
+    
+    // If signup was successful but no user was returned (email confirmation disabled),
+    // we might need to handle this case
+    if (!error && data.user) {
+      console.log("User created successfully:", data.user.id);
+    }
     
     return { error };
   };
