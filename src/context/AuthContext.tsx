@@ -59,33 +59,67 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (data.user) {
       console.log("User created successfully:", data.user.id);
       
-      // Wait a moment for the trigger to create the profile
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Wait longer for the trigger to create the profile
+      await new Promise(resolve => setTimeout(resolve, 3000));
       
-      // Check if profile was created by trigger
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', data.user.id)
-        .single();
+      // Check if profile was created by trigger, retry up to 3 times
+      let profile = null;
+      let profileError = null;
+      
+      for (let i = 0; i < 3; i++) {
+        const { data: profileData, error: err } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', data.user.id)
+          .single();
+        
+        if (profileData) {
+          profile = profileData;
+          profileError = null;
+          break;
+        }
+        
+        profileError = err;
+        
+        if (i < 2) {
+          // Wait before retrying
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
       
       if (profileError || !profile) {
         // Profile doesn't exist or there was an error, create it manually
         console.log("Creating profile manually for user:", data.user.id);
         
-        const { error: manualInsertError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            first_name: metadata?.firstName || '',
-            last_name: metadata?.lastName || '',
-            role: metadata?.role || 'respondent',
-          });
+        // Try multiple times to create the profile
+        let manualInsertError = null;
+        
+        for (let i = 0; i < 3; i++) {
+          const { error: err } = await supabase
+            .from('profiles')
+            .insert({
+              id: data.user.id,
+              first_name: metadata?.firstName || '',
+              last_name: metadata?.lastName || '',
+              role: metadata?.role || 'respondent',
+            });
+          
+          if (!err) {
+            manualInsertError = null;
+            break;
+          }
+          
+          manualInsertError = err;
+          
+          if (i < 2) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
         
         if (manualInsertError) {
           console.error("Error creating profile manually:", manualInsertError);
-          // Don't fail registration if profile creation fails
-          console.warn("Profile creation failed, but user was created successfully");
+          // This is a critical error - we need the profile for assessments to work
+          return { error: new Error("Failed to create user profile. Please try again.") };
         }
       } else {
         console.log("Profile created successfully by trigger");

@@ -41,6 +41,17 @@ export const useAssessmentStore = create<AssessmentState>((set, get) => ({
   initializeAssessment: async (userId: string) => {
     set({ loading: true, error: null });
     try {
+      // First, verify that the user profile exists
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .single();
+      
+      if (profileError || !profile) {
+        throw new Error('User profile not found. Please try logging out and back in.');
+      }
+      
       // Create a new assessment
       const { data, error } = await supabase
         .from('assessments')
