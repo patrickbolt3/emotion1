@@ -51,10 +51,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     });
     
-    // If signup was successful but no user was returned (email confirmation disabled),
-    // we might need to handle this case
-    if (!error && data.user) {
+    if (error) {
+      console.error("Signup error:", error);
+      return { error };
+    }
+
+    if (data.user) {
       console.log("User created successfully:", data.user.id);
+      
+      // Wait a moment for the trigger to create the profile
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Verify profile was created, if not create it manually
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', data.user.id)
+        .single();
+      
+      if (profileError && profileError.code === 'PGRST116') {
+        // Profile doesn't exist, create it manually
+        console.log("Creating profile manually for user:", data.user.id);
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            first_name: metadata?.firstName || '',
+            last_name: metadata?.lastName || '',
+            role: metadata?.role || 'respondent',
+          });
+        
+        if (insertError) {
+          console.error("Error creating profile manually:", insertError);
+          return { error: insertError };
+        }
+      }
     }
     
     return { error };
