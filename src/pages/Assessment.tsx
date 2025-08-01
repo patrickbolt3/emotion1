@@ -152,6 +152,12 @@ const Assessment: React.FC = () => {
   const handleNext = async () => {
     if (!currentRating) return;
     
+    // Safety check to ensure currentQuestion exists
+    if (!currentQuestion) {
+      console.error('Current question is undefined');
+      return;
+    }
+    
     const currentQuestion = questions[currentQuestionIndex];
     await saveResponse(currentQuestion.id, currentRating);
     
@@ -189,7 +195,36 @@ const Assessment: React.FC = () => {
     );
   }
 
+  // Check if questions are available
+  if (!loading && questions.length === 0) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gray-50 p-4">
+        <Brain className="h-12 w-12 text-blue-600 mb-4" />
+        <h2 className="text-2xl font-bold text-gray-900">No Questions Available</h2>
+        <p className="mt-2 text-gray-600">This assessment doesn't have any questions configured.</p>
+        <Button className="mt-6" onClick={() => navigate('/')}>
+          Return to Home
+        </Button>
+      </div>
+    );
+  }
+
   const currentQuestion = questions[currentQuestionIndex];
+  
+  // Additional safety check for currentQuestion
+  if (!loading && !currentQuestion) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gray-50 p-4">
+        <Brain className="h-12 w-12 text-blue-600 mb-4" />
+        <h2 className="text-2xl font-bold text-gray-900">Question Not Found</h2>
+        <p className="mt-2 text-gray-600">Unable to load the current question.</p>
+        <Button className="mt-6" onClick={() => navigate('/')}>
+          Return to Home
+        </Button>
+      </div>
+    );
+  }
+
   const totalQuestions = questions.length;
   const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
 
