@@ -13,7 +13,9 @@ import {
   AlertTriangle,
   CheckCircle,
   Search,
-  Filter
+  Filter,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 
 interface Question {
@@ -47,6 +49,10 @@ const QuestionsManagement: React.FC = () => {
   const [selectedQuestions, setSelectedQuestions] = useState<Set<string>>(new Set());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [questionToDelete, setQuestionToDelete] = useState<string | null>(null);
+
+  // State for grouping and collapsing
+  const [groupByState, setGroupByState] = useState(true);
+  const [collapsedStates, setCollapsedStates] = useState<Set<string>>(new Set());
 
   // Form state for new/editing questions
   const [formData, setFormData] = useState({
@@ -260,6 +266,35 @@ const QuestionsManagement: React.FC = () => {
     return matchesSearch && matchesFilter;
   });
 
+  // Group questions by harmonic state
+  const groupedQuestions = React.useMemo(() => {
+    if (!groupByState) return null;
+    
+    const groups: Record<string, { state: HarmonicState; questions: Question[] }> = {};
+    
+    filteredQuestions.forEach(question => {
+      const state = harmonicStates.find(s => s.id === question.harmonic_state);
+      if (state) {
+        if (!groups[state.id]) {
+          groups[state.id] = { state, questions: [] };
+        }
+        groups[state.id].questions.push(question);
+      }
+    });
+    
+    // Sort groups by state name
+    return Object.values(groups).sort((a, b) => a.state.name.localeCompare(b.state.name));
+  }, [filteredQuestions, harmonicStates, groupByState]);
+
+  const toggleStateCollapse = (stateId: string) => {
+    const newCollapsed = new Set(collapsedStates);
+    if (newCollapsed.has(stateId)) {
+      newCollapsed.delete(stateId);
+    } else {
+      newCollapsed.add(stateId);
+    }
+    setCollapsedStates(newCollapsed);
+  };
   if (loading) {
     return (
       <div className="animate-pulse">
@@ -333,6 +368,17 @@ const QuestionsManagement: React.FC = () => {
                 className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
+          </div>
+          <div className="flex items-center">
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={groupByState}
+                onChange={(e) => setGroupByState(e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2"
+              />
+              <span className="text-sm text-gray-700">Group by Harmonic State</span>
+            </label>
           </div>
           <div className="sm:w-64">
             <div className="relative">
@@ -455,86 +501,189 @@ const QuestionsManagement: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <input
-                      type="checkbox"
-                      checked={selectedQuestions.size === filteredQuestions.length && filteredQuestions.length > 0}
-                      onChange={handleSelectAll}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Order
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Question
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Harmonic State
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredQuestions.map((question) => (
-                  <tr key={question.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
+            {groupByState && groupedQuestions ? (
+              // Grouped view
+              <div className="space-y-6">
+                {groupedQuestions.map((group) => (
+                  <div key={group.state.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                    {/* Group Header */}
+                    <div 
+                      className="bg-gray-50 px-6 py-4 border-b border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => toggleStateCollapse(group.state.id)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          {collapsedStates.has(group.state.id) ? (
+                            <ChevronRight className="h-5 w-5 text-gray-400 mr-2" />
+                          ) : (
+                            <ChevronDown className="h-5 w-5 text-gray-400 mr-2" />
+                          )}
+                          <div 
+                            className="w-4 h-4 rounded-full mr-3"
+                            style={{ backgroundColor: group.state.color }}
+                          ></div>
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {group.state.name}
+                          </h3>
+                          <span className="ml-2 text-sm text-gray-500">
+                            ({group.questions.length} questions)
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={group.questions.every(q => selectedQuestions.has(q.id))}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              const newSelected = new Set(selectedQuestions);
+                              if (e.target.checked) {
+                                group.questions.forEach(q => newSelected.add(q.id));
+                              } else {
+                                group.questions.forEach(q => newSelected.delete(q.id));
+                              }
+                              setSelectedQuestions(newSelected);
+                            }}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <span className="text-xs text-gray-500">Select All</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Group Questions */}
+                    {!collapsedStates.has(group.state.id) && (
+                      <div className="divide-y divide-gray-200">
+                        {group.questions.map((question) => (
+                          <div key={question.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                            <div className="flex items-start space-x-4">
+                              <input
+                                type="checkbox"
+                                checked={selectedQuestions.has(question.id)}
+                                onChange={() => handleSelectQuestion(question.id)}
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center space-x-2">
+                                    <span className="text-sm font-medium text-gray-500">
+                                      #{question.order}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <button
+                                      onClick={() => handleEditQuestion(question)}
+                                      className="text-blue-600 hover:text-blue-900 flex items-center text-sm"
+                                    >
+                                      <Edit className="h-4 w-4 mr-1" />
+                                      Edit
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteQuestion(question.id)}
+                                      className="text-red-600 hover:text-red-900 flex items-center text-sm"
+                                      disabled={deleting}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-1" />
+                                      Delete
+                                    </button>
+                                  </div>
+                                </div>
+                                <div className="mt-2">
+                                  <p className="text-sm text-gray-900 leading-relaxed">
+                                    {question.question_text}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              // Table view
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       <input
                         type="checkbox"
-                        checked={selectedQuestions.has(question.id)}
-                        onChange={() => handleSelectQuestion(question.id)}
+                        checked={selectedQuestions.size === filteredQuestions.length && filteredQuestions.length > 0}
+                        onChange={handleSelectAll}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        #{question.order}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 max-w-md">
-                        {question.question_text}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div 
-                          className="w-3 h-3 rounded-full mr-2"
-                          style={{ backgroundColor: question.state_color || '#6B7280' }}
-                        ></div>
-                        <span className="text-sm text-gray-900">
-                          {question.state_name || 'Unknown State'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleEditQuestion(question)}
-                          className="text-blue-600 hover:text-blue-900 flex items-center"
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteQuestion(question.id)}
-                          className="text-red-600 hover:text-red-900 flex items-center"
-                          disabled={deleting}
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
-                        </button>
-                      </div>
-                    </td>
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Order
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Question
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Harmonic State
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredQuestions.map((question) => (
+                    <tr key={question.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={selectedQuestions.has(question.id)}
+                          onChange={() => handleSelectQuestion(question.id)}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          #{question.order}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-900 max-w-md">
+                          {question.question_text}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div 
+                            className="w-3 h-3 rounded-full mr-2"
+                            style={{ backgroundColor: question.state_color || '#6B7280' }}
+                          ></div>
+                          <span className="text-sm text-gray-900">
+                            {question.state_name || 'Unknown State'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => handleEditQuestion(question)}
+                            className="text-blue-600 hover:text-blue-900 flex items-center"
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteQuestion(question.id)}
+                            className="text-red-600 hover:text-red-900 flex items-center"
+                            disabled={deleting}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         )}
       </div>
