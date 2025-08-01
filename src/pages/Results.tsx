@@ -428,7 +428,7 @@ const Results: React.FC = () => {
         url: window.location.href
       };
       
-      if (navigator.share) {
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
         setShareMessage('Results shared successfully!');
       } else {
@@ -440,7 +440,18 @@ const Results: React.FC = () => {
       setTimeout(() => setShareMessage(null), 3000);
     } catch (error) {
       console.error('Error sharing results:', error);
-      setShareMessage('Failed to share results');
+      // Fallback to clipboard if sharing fails
+      try {
+        const shareData = {
+          title: 'My Emotional Dynamics Results',
+          text: `I just completed the Emotional Dynamics Indicator™ assessment and discovered my dominant state is ${state?.name}!`,
+          url: window.location.href
+        };
+        await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+        setShareMessage('Link copied to clipboard!');
+      } catch (clipboardError) {
+        setShareMessage('Failed to share results');
+      }
       setTimeout(() => setShareMessage(null), 3000);
     }
   };
