@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .from('profiles')
           .select('id')
           .eq('id', data.user.id)
-          .single();
+          .maybeSingle();
         
         if (profileData) {
           profile = profileData;
