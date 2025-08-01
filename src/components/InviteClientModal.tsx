@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { Button } from './ui/Button';
 import { X, Mail, User, Loader2 } from 'lucide-react';
@@ -19,16 +18,6 @@ const InviteClientModal: React.FC<InviteClientModalProps> = ({ isOpen, onClose, 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Generate a random password
-  const generatePassword = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-    let password = '';
-    for (let i = 0; i < 12; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return password;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -37,71 +26,39 @@ const InviteClientModal: React.FC<InviteClientModalProps> = ({ isOpen, onClose, 
     setError(null);
 
     try {
-      // Generate a temporary password
-      const tempPassword = generatePassword();
-
-      // Create the user account
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email,
-        password: tempPassword,
-        email_confirm: true, // Auto-confirm email
-        user_metadata: {
-          role: 'respondent',
-          first_name: firstName,
-          last_name: lastName,
-          invited_by: user.id,
-          temp_password: true
-        }
+      // Call the edge function to invite the client
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/invite-client`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          coachId: user.id
+        })
       });
 
-      if (authError) throw authError;
+      const result = await response.json();
 
-      if (authData.user) {
-        // Wait a moment for the trigger to create the profile
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Update the profile to set the coach relationship
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({
-            coach_id: user.id,
-            first_name: firstName,
-            last_name: lastName
-          })
-          .eq('id', authData.user.id);
-
-        if (profileError) {
-          console.error('Profile update error:', profileError);
-          // Try to create the profile manually if update failed
-          const { error: insertError } = await supabase
-            .from('profiles')
-            .insert({
-              id: authData.user.id,
-              first_name: firstName,
-              last_name: lastName,
-              role: 'respondent',
-              coach_id: user.id
-            });
-
-          if (insertError) throw insertError;
-        }
-
-        // Send invitation email (this would typically be done via an edge function or email service)
-        // For now, we'll show the password in the success message
-        setSuccess(true);
-        
-        // In a real implementation, you would send an email here
-        console.log(`Invitation sent to ${email} with temporary password: ${tempPassword}`);
-        
-        // Reset form
-        setFirstName('');
-        setLastName('');
-        setEmail('');
-        
-        if (onSuccess) {
-          onSuccess();
-        }
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to invite client');
       }
+
+      // Success
+      setSuccess(true);
+      
+      // Reset form
+      setFirstName('');
+      setLastName('');
+      setEmail('');
+      
+      if (onSuccess) {
+        onSuccess();
+      }
+
     } catch (err: any) {
       console.error('Error inviting client:', err);
       setError(err.message || 'Failed to invite client');
@@ -144,10 +101,10 @@ const InviteClientModal: React.FC<InviteClientModalProps> = ({ isOpen, onClose, 
                 Invitation Sent!
               </h3>
               <p className="text-gray-600 mb-4">
-                An invitation has been sent to <strong>{email}</strong> with their login credentials.
+                An invitation email has been sent to <strong>{email}</strong> with their login credentials.
               </p>
               <p className="text-sm text-gray-500 mb-6">
-                They can now log in and take the Emotional Dynamics assessment.
+                They will receive an email with their temporary password and can log in to take the assessment.
               </p>
               <Button onClick={handleClose} className="w-full">
                 Done
