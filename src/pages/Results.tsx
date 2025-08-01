@@ -289,12 +289,118 @@ const Results: React.FC = () => {
       if (state?.coaching_tips) {
         pdf.setFontSize(14);
         pdf.setTextColor(r, g, b);
-        pdf.text('Coaching Recommendations:', 20, 180);
+        pdf.text('Understanding Your Dominant State:', 20, 180);
+        
+        // Strengths section
+        pdf.setFontSize(12);
+        pdf.setTextColor(r, g, b);
+        pdf.text(`Strengths of ${state.name}:`, 20, 200);
+        
+        pdf.setFontSize(10);
+        pdf.setTextColor(0, 0, 0);
+        
+        // Define strengths based on state name
+        const getStrengths = (stateName: string) => {
+          switch (stateName) {
+            case "Confidence":
+              return [
+                "• Assured belief in your capabilities",
+                "• Capacity for decisive action", 
+                "• Clear boundaries and strong sense of self"
+              ];
+            case "Curiosity":
+              return [
+                "• Strong drive to learn and expand knowledge",
+                "• Ability to make interesting connections between ideas",
+                "• Natural aptitude for asking insightful questions"
+              ];
+            case "Enthusiasm":
+              return [
+                "• Energetic engagement with people and ideas",
+                "• Ability to inspire and motivate others",
+                "• Quick to engage with new possibilities"
+              ];
+            case "Creative Power":
+              return [
+                "• Ability to generate new ideas and solutions",
+                "• Natural capacity to turn imagination into action",
+                "• Visionary thinking combined with practical implementation"
+              ];
+            default:
+              return [
+                "• Connection to your unique strengths",
+                "• Distinctive emotional perspective", 
+                "• Unique contributions only you can offer"
+              ];
+          }
+        };
+        
+        const strengths = getStrengths(state.name);
+        let yPosition = 210;
+        strengths.forEach(strength => {
+          pdf.text(strength, 25, yPosition);
+          yPosition += 10;
+        });
+        
+        // Growth Opportunities section
+        pdf.setFontSize(12);
+        pdf.setTextColor(r, g, b);
+        pdf.text('Growth Opportunities:', 20, yPosition + 10);
+        
+        pdf.setFontSize(10);
+        pdf.setTextColor(0, 0, 0);
+        
+        const getGrowthOpportunities = (stateName: string) => {
+          switch (stateName) {
+            case "Confidence":
+              return [
+                "• Remain open to feedback and refinement",
+                "• Balance certainty with humility",
+                "• Know when to be certain vs. when to question"
+              ];
+            case "Curiosity":
+              return [
+                "• Develop more focus on completing projects",
+                "• Practice deeper inquiry versus breadth in some areas",
+                "• Balance exploration with practical implementation"
+              ];
+            case "Enthusiasm":
+              return [
+                "• Practice focused attention on one initiative",
+                "• Develop systems for evaluating opportunities",
+                "• Channel energy strategically for sustained impact"
+              ];
+            case "Creative Power":
+              return [
+                "• Develop sustainable creative practices",
+                "• Balance innovative thinking with follow-through",
+                "• Create structure to support completing creative projects"
+              ];
+            default:
+              return [
+                "• Exploring transformative development options",
+                "• Building on current strengths",
+                "• Evolving your emotional patterns"
+              ];
+          }
+        };
+        
+        const growthOpportunities = getGrowthOpportunities(state.name);
+        yPosition += 20;
+        growthOpportunities.forEach(opportunity => {
+          pdf.text(opportunity, 25, yPosition);
+          yPosition += 10;
+        });
+        
+        // Coaching Recommendations section
+        pdf.setFontSize(12);
+        pdf.setTextColor(r, g, b);
+        pdf.text('Coaching Recommendations:', 20, yPosition + 10);
         
         pdf.setFontSize(11);
         pdf.setTextColor(0, 0, 0);
         const splitTips = pdf.splitTextToSize(state.coaching_tips, 170);
-        pdf.text(splitTips, 20, 195);
+        pdf.text(splitTips, 20, yPosition + 20);
       }
       
       // Footer
