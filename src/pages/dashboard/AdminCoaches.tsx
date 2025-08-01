@@ -46,20 +46,10 @@ const AdminCoaches: React.FC = () => {
             if (countError) throw countError;
 
             // Try to get email from current user if it's the same user, otherwise show placeholder
-            let email = null;
-            try {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (user && user.id === coach.id) {
-                email = user.email;
-              }
-            } catch (error) {
-              // Ignore error, email will remain null
-            }
 
             return {
               ...coach,
-              client_count: count || 0,
-              email: email
+              client_count: count || 0
             };
           })
         );
