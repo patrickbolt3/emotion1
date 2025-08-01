@@ -9,7 +9,7 @@ interface Coach {
   id: string;
   first_name: string;
   last_name: string;
-  email: string;
+  users: { email: string } | null;
   client_count: number;
 }
 
@@ -39,7 +39,7 @@ const TrainerDashboard: React.FC = () => {
         // Get coaches managed by this trainer
         const { data: coachProfiles, error: coachesError } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name, email')
+          .select('id, first_name, last_name, users(email)')
           .eq('trainer_id', user.id)
           .eq('role', 'coach')
           .order('first_name', { ascending: true });
@@ -251,7 +251,7 @@ const TrainerDashboard: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{coach.email}</div>
+                    <div className="text-sm text-gray-500">{coach.users?.email}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">{coach.client_count}</div>

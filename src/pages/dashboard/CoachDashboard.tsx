@@ -9,7 +9,7 @@ interface ClientProfile {
   id: string;
   first_name: string;
   last_name: string;
-  email: string;
+  users: { email: string } | null;
   latest_assessment?: {
     id: string;
     created_at: string;
@@ -33,7 +33,7 @@ const CoachDashboard: React.FC = () => {
         // Get clients for this coach
         const { data: clientProfiles, error: clientsError } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name, email')
+          .select('id, first_name, last_name, users(email)')
           .eq('coach_id', user.id)
           .order('first_name', { ascending: true });
         
@@ -207,7 +207,7 @@ const CoachDashboard: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{client.email}</div>
+                    <div className="text-sm text-gray-500">{client.users?.email}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {client.latest_assessment ? (
