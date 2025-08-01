@@ -18,7 +18,7 @@ const LikertScale: React.FC<{
         <span>Strongly agree</span>
       </div>
       <div className="flex justify-between gap-2">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
+        {[1, 2, 3, 4, 5, 6, 7].map((rating) => (
           <motion.button
             key={rating}
             whileHover={{ scale: 1.05 }}
