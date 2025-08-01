@@ -27,6 +27,7 @@ import AdminSettings from './dashboard/AdminSettings';
 import RespondentDetails from './dashboard/RespondentDetails';
 import CoachDetails from './dashboard/CoachDetails';
 import NotFound from './NotFound';
+import QuestionsManagement from './dashboard/QuestionsManagement';
 
 // Hook to get user role from database
 const useUserRole = () => {
