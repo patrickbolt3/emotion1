@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { jsPDF } from 'jspdf';
 import { supabase } from '../lib/supabase';
 import { Button } from '../components/ui/Button';
 import { Brain, ChevronRight, Download, Share2 } from 'lucide-react';
