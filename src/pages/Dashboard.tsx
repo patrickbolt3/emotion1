@@ -123,20 +123,6 @@ const DashboardNav: React.FC = () => {
           </div>
           
           <div className="flex items-center">
-            {userRole === 'coach' && (
-              <Button 
-                size="sm" 
-                className="mr-4"
-                onClick={() => {
-                  // This will be handled by the CoachDashboard component
-                  // We can remove this button or make it trigger the modal
-                }}
-              >
-                <UserPlus className="h-4 w-4 mr-2" />
-                Invite Client
-              </Button>
-            )}
-            
             <div className="relative">
               <details className="group">
                 <summary className="flex cursor-pointer items-center gap-2 rounded-full bg-gray-50 p-2 text-gray-700 hover:bg-gray-100">
