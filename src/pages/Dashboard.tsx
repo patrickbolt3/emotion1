@@ -51,6 +51,10 @@ const useUserRole = () => {
         setRole(data?.role || 'respondent');
       } catch (err) {
         console.error('Error fetching user role:', err);
+        // If it's a connection error, show a more helpful message
+        if (err instanceof TypeError && err.message.includes('fetch')) {
+          console.error('Supabase connection failed. Please check your environment variables.');
+        }
         setRole('respondent'); // Default fallback
       } finally {
         setLoading(false);
