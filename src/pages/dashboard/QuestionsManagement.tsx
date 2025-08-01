@@ -389,9 +389,13 @@ const QuestionsManagement: React.FC = () => {
                 className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">All States</option>
-                {harmonicStates.map(state => (
+                {harmonicStates
+                  .filter((state, index, self) => 
+                    index === self.findIndex(s => s.id === state.id)
+                  )
+                  .map(state => (
                   <option key={state.id} value={state.id}>{state.name}</option>
-                ))}
+                  ))}
               </select>
             </div>
           </div>
