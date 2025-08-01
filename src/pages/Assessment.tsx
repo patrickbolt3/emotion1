@@ -135,12 +135,19 @@ const Assessment: React.FC = () => {
             .eq('id', currentQuestion.harmonic_state)
             .single();
           
-          if (error) throw error;
+          if (error) {
+            console.error('Error fetching harmonic state color:', error);
+            setActiveColor('#4F46E5'); // Default color
+            return;
+          }
+          
           if (state && state.color) {
             setActiveColor(state.color);
+          } else {
+            setActiveColor('#4F46E5'); // Default color if no color found
           }
         } catch (err) {
-          console.error('Error getting question color:', err);
+          console.error('Network error getting question color:', err);
           setActiveColor('#4F46E5'); // Default color
         }
       };
