@@ -131,23 +131,23 @@ const LandingPage: React.FC = () => {
               transition={{ duration: 0.8, delay: 0.4 }}
             >
               <Link to="/register">
-                <Button variant="gradient" size="xl" rounded="full" className="shadow-glow animate-glow-pulse">
+                <Button variant="gradient" size="xl" rounded="full" className="shadow-glow animate-glow-pulse px-8 py-4">
                   Take the Free Assessment <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link to="/emotional-states">
-                <Button size="xl" variant="outline" rounded="full">
+                <Button size="xl" variant="outline" rounded="full" className="px-8 py-4">
                   <Book className="mr-2 h-5 w-5" />
                   Harmonic States Guide
                 </Button>
               </Link>
               <Link to="/questions-preview">
-                <Button size="xl" variant="outline" rounded="full">
+                <Button size="xl" variant="outline" rounded="full" className="px-8 py-4">
                   Preview Questions
                 </Button>
               </Link>
               <Link to="/results-preview">
-                <Button size="xl" variant="outline" rounded="full">
+                <Button size="xl" variant="outline" rounded="full" className="px-8 py-4">
                   Preview Sample Results
                 </Button>
               </Link>
@@ -561,28 +561,28 @@ const LandingPage: React.FC = () => {
               viewport={{ once: true }}
             >
               <Link to="/register">
-                <Button className="bg-white text-gradient-start hover:bg-gray-100 shadow-glow rounded-full">
+                <Button className="bg-white text-gradient-start hover:bg-gray-100 shadow-glow rounded-full px-8 py-3 font-medium">
                   Take the Assessment
                 </Button>
               </Link>
               <Link to="/emotional-states">
-                <Button variant="outline" className="text-white border-white hover:bg-white/10 rounded-full">
+                <Button variant="outline" className="text-white border-white hover:bg-white/10 rounded-full px-8 py-3 font-medium">
                   <Book className="mr-2 h-4 w-4" />
                   Harmonic States Guide
                 </Button>
               </Link>
               <Link to="/questions-preview">
-                <Button variant="outline" className="text-white border-white hover:bg-white/10 rounded-full">
+                <Button variant="outline" className="text-white border-white hover:bg-white/10 rounded-full px-8 py-3 font-medium">
                   Preview Questions
                 </Button>
               </Link>
               <Link to="/results-preview">
-                <Button variant="outline" className="text-white border-white hover:bg-white/10 rounded-full">
+                <Button variant="outline" className="text-white border-white hover:bg-white/10 rounded-full px-8 py-3 font-medium">
                   Preview Results
                 </Button>
               </Link>
               <Link to="/login">
-                <Button variant="outline" className="text-white border-white hover:bg-white/10 rounded-full">
+                <Button variant="outline" className="text-white border-white hover:bg-white/10 rounded-full px-8 py-3 font-medium">
                   Coach Login
                 </Button>
               </Link>
