@@ -2,14 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../../components/ui/Button';
-import { ArrowLeft, Briefcase, Users, Mail, Calendar, MoreVertical } from 'lucide-react';
+import { ArrowLeft, Briefcase, Users, Calendar, MoreVertical } from 'lucide-react';
 
 interface Coach {
   id: string;
   first_name: string | null;
   last_name: string | null;
   created_at: string;
-  email: string | null;
   client_count: number;
 }
 
