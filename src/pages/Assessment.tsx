@@ -152,13 +152,14 @@ const Assessment: React.FC = () => {
   const handleNext = async () => {
     if (!currentRating) return;
     
+    const currentQuestion = questions[currentQuestionIndex];
+    
     // Safety check to ensure currentQuestion exists
     if (!currentQuestion) {
       console.error('Current question is undefined');
       return;
     }
     
-    const currentQuestion = questions[currentQuestionIndex];
     await saveResponse(currentQuestion.id, currentRating);
     
     if (currentQuestionIndex < questions.length - 1) {
