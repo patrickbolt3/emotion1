@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../../components/ui/Button';
-import { BarChart3, Settings, Users, Briefcase as BriefcaseBusiness, UserCog, FileText, Book } from 'lucide-react';
+import { BarChart3, Settings, Users, Briefcase as BriefcaseBusiness, UserCog, FileText, Book, UserPlus } from 'lucide-react';
 
 interface DashboardStats {
   total_users: number;
