@@ -143,9 +143,6 @@ const AdminCoaches: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Coach
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Email
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -162,19 +159,6 @@ const AdminCoaches: React.FC = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {coaches.map((coach) => (
                   <tr key={coach.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-medium">
-                          {coach.first_name?.[0] || 'C'}{coach.last_name?.[0] || ''}
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {coach.first_name || 'Unknown'} {coach.last_name || 'Coach'}
-                          </div>
-                          <div className="text-sm text-gray-500">ID: {coach.id.slice(0, 8)}...</div>
-                        </div>
-                      </div>
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {coach.email ? (
                         <div className="flex items-center text-sm text-gray-900">
