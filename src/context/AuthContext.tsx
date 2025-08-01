@@ -19,13 +19,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session and persist it
+    // Get initial session on app load
     const initializeAuth = async () => {
       try {
+        console.log('Initializing auth...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Error getting session:', error);
+        } else {
+          console.log('Initial session loaded:', session ? 'Found session' : 'No session');
         }
         
         setSession(session);
@@ -39,29 +42,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     initializeAuth();
 
-    // Listen for auth changes and persist sessions
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.email);
       
       setSession(session);
       setUser(session?.user ?? null);
-      setLoading(false);
       
-      // Handle session persistence
+      // Only set loading to false after we've processed the auth state
+      if (loading) {
+        setLoading(false);
+      }
+      
       if (event === 'SIGNED_IN' && session) {
-        // Session is automatically persisted by Supabase
         console.log('User signed in, session persisted');
       } else if (event === 'SIGNED_OUT') {
-        // Clear any local state if needed
         console.log('User signed out');
       } else if (event === 'TOKEN_REFRESHED' && session) {
-        // Session token was refreshed automatically
         console.log('Session token refreshed');
+      } else if (event === 'INITIAL_SESSION' && session) {
+        console.log('Initial session restored from storage');
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [loading]);
 
   const signUp = async (email: string, password: string, metadata?: { role: string, firstName?: string, lastName?: string }) => {
     console.log("Signing up with metadata:", metadata);
