@@ -147,8 +147,8 @@ const LandingPage: React.FC = () => {
                 </Button>
               </Link>
               <Link to="/results-preview">
-                <Button size="xl" variant="outline" rounded="full" className="px-8 py-4">
-                  Preview Sample Results
+                <Button size="xl" variant="outline" rounded="full" className="px-6 py-4">
+                  Sample Results
                 </Button>
               </Link>
             </motion.div>
@@ -577,8 +577,8 @@ const LandingPage: React.FC = () => {
                 </Button>
               </Link>
               <Link to="/results-preview">
-                <Button variant="outline" className="text-white border-white hover:bg-white/10 rounded-full px-8 py-3 font-medium">
-                  Preview Results
+                <Button variant="outline" className="text-white border-white hover:bg-white/10 rounded-full px-6 py-3 font-medium">
+                  Sample Results
                 </Button>
               </Link>
               <Link to="/login">
