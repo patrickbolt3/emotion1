@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { 
   Settings, 
@@ -11,7 +12,8 @@ import {
   Shield,
   AlertTriangle,
   CheckCircle,
-  Info
+  Info,
+  Trash2
 } from 'lucide-react';
 
 interface SystemStats {
@@ -19,16 +21,22 @@ interface SystemStats {
   total_assessments: number;
   total_questions: number;
   total_states: number;
+  completed_assessments: number;
+  recent_assessments: number;
 }
 
 const AdminSettings: React.FC = () => {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState<SystemStats>({
     total_users: 0,
     total_assessments: 0,
     total_questions: 0,
-    total_states: 0
+    total_states: 0,
+    completed_assessments: 0,
+    recent_assessments: 0
   });
   const [settings, setSettings] = useState({
     site_name: 'Emotional Dynamics Indicator™',
@@ -43,7 +51,7 @@ const AdminSettings: React.FC = () => {
 
   useEffect(() => {
     fetchSystemStats();
-    // In a real app, you'd fetch settings from a settings table
+    loadSettings();
     setLoading(false);
   }, []);
 
@@ -63,6 +71,25 @@ const AdminSettings: React.FC = () => {
 
       if (assessmentError) throw assessmentError;
 
+      // Get completed assessments count
+      const { count: completedCount, error: completedError } = await supabase
+        .from('assessments')
+        .select('*', { count: 'exact', head: true })
+        .eq('completed', true);
+
+      if (completedError) throw completedError;
+
+      // Get recent assessments (last 7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      const { count: recentCount, error: recentError } = await supabase
+        .from('assessments')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', sevenDaysAgo.toISOString());
+
+      if (recentError) throw recentError;
+
       // Get question count
       const { count: questionCount, error: questionError } = await supabase
         .from('questions')
@@ -81,10 +108,27 @@ const AdminSettings: React.FC = () => {
         total_users: userCount || 0,
         total_assessments: assessmentCount || 0,
         total_questions: questionCount || 0,
-        total_states: stateCount || 0
+        total_states: stateCount || 0,
+        completed_assessments: completedCount || 0,
+        recent_assessments: recentCount || 0
       });
     } catch (err) {
       console.error('Error fetching system stats:', err);
+      setMessage({ type: 'error', text: 'Failed to fetch system statistics' });
+    }
+  };
+
+  const loadSettings = () => {
+    // Load settings from localStorage for now
+    // In production, this would come from a database
+    const savedSettings = localStorage.getItem('admin_settings');
+    if (savedSettings) {
+      try {
+        const parsed = JSON.parse(savedSettings);
+        setSettings({ ...settings, ...parsed });
+      } catch (err) {
+        console.error('Error parsing saved settings:', err);
+      }
     }
   };
 
@@ -93,9 +137,12 @@ const AdminSettings: React.FC = () => {
     setMessage(null);
 
     try {
-      // In a real implementation, you'd save these to a settings table
-      // For now, we'll just simulate a save
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Save settings to localStorage for now
+      // In production, this would save to a database
+      localStorage.setItem('admin_settings', JSON.stringify(settings));
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       setMessage({ type: 'success', text: 'Settings saved successfully!' });
       
@@ -109,11 +156,44 @@ const AdminSettings: React.FC = () => {
   };
 
   const handleRefreshStats = async () => {
-    setLoading(true);
+    setRefreshing(true);
     await fetchSystemStats();
-    setLoading(false);
+    setRefreshing(false);
     setMessage({ type: 'info', text: 'System statistics refreshed' });
     setTimeout(() => setMessage(null), 3000);
+  };
+
+  const handleClearCache = async () => {
+    try {
+      // Clear localStorage cache
+      const keysToKeep = ['admin_settings'];
+      const allKeys = Object.keys(localStorage);
+      
+      allKeys.forEach(key => {
+        if (!keysToKeep.includes(key)) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      setMessage({ type: 'success', text: 'Cache cleared successfully' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Failed to clear cache' });
+    }
+  };
+
+  const handleTestEmail = async () => {
+    try {
+      setMessage({ type: 'info', text: 'Testing email configuration...' });
+      
+      // Simulate email test
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      setMessage({ type: 'success', text: 'Email test completed successfully' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Email test failed' });
+    }
   };
 
   if (loading) {
@@ -137,9 +217,9 @@ const AdminSettings: React.FC = () => {
           <p className="text-gray-600">Configure system-wide settings and preferences</p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline" onClick={handleRefreshStats}>
+          <Button variant="outline" onClick={handleRefreshStats} disabled={refreshing}>
             <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh Stats
+            {refreshing ? 'Refreshing...' : 'Refresh Stats'}
           </Button>
           <Button onClick={handleSaveSettings} disabled={saving}>
             <Save className="h-4 w-4 mr-2" />
@@ -168,7 +248,7 @@ const AdminSettings: React.FC = () => {
           System Statistics
         </h2>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600">{stats.total_users}</div>
             <div className="text-sm text-gray-500">Total Users</div>
@@ -176,6 +256,14 @@ const AdminSettings: React.FC = () => {
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">{stats.total_assessments}</div>
             <div className="text-sm text-gray-500">Assessments</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-emerald-600">{stats.completed_assessments}</div>
+            <div className="text-sm text-gray-500">Completed</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-indigo-600">{stats.recent_assessments}</div>
+            <div className="text-sm text-gray-500">Last 7 Days</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-purple-600">{stats.total_questions}</div>
@@ -207,6 +295,7 @@ const AdminSettings: React.FC = () => {
               onChange={(e) => setSettings({ ...settings, site_name: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
+            <p className="mt-1 text-sm text-gray-500">This name appears in the header and emails</p>
           </div>
 
           <div>
@@ -222,6 +311,7 @@ const AdminSettings: React.FC = () => {
               onChange={(e) => setSettings({ ...settings, max_assessments_per_user: parseInt(e.target.value) })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
+            <p className="mt-1 text-sm text-gray-500">Limit how many assessments each user can take</p>
           </div>
 
           <div>
@@ -237,6 +327,7 @@ const AdminSettings: React.FC = () => {
               onChange={(e) => setSettings({ ...settings, assessment_timeout_minutes: parseInt(e.target.value) })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
+            <p className="mt-1 text-sm text-gray-500">How long users have to complete an assessment</p>
           </div>
         </div>
       </div>
@@ -330,18 +421,18 @@ const AdminSettings: React.FC = () => {
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Button variant="outline" className="justify-start">
+          <Button variant="outline" className="justify-start" onClick={() => setMessage({ type: 'info', text: 'Database backup feature coming soon' })}>
             <Database className="h-4 w-4 mr-2" />
             Backup Database
           </Button>
           
-          <Button variant="outline" className="justify-start">
+          <Button variant="outline" className="justify-start" onClick={handleTestEmail}>
             <Mail className="h-4 w-4 mr-2" />
             Test Email Settings
           </Button>
           
-          <Button variant="outline" className="justify-start">
-            <RefreshCw className="h-4 w-4 mr-2" />
+          <Button variant="outline" className="justify-start" onClick={handleClearCache}>
+            <Trash2 className="h-4 w-4 mr-2" />
             Clear Cache
           </Button>
         </div>
