@@ -145,8 +145,9 @@ const DashboardNav: React.FC = () => {
                 
                 <div className="absolute right-0 z-10 mt-1 w-56 rounded-md border border-gray-100 bg-white shadow-lg">
                   <div className="p-2">
-                    <div className="px-4 py-2 text-sm text-gray-500">
-                      Signed in as <span className="font-medium text-gray-900">{user?.email}</span>
+                    <div className="px-4 py-2 text-sm text-gray-500 break-words">
+                      <div>Signed in as</div>
+                      <div className="font-medium text-gray-900 break-all overflow-hidden">{user?.email}</div>
                     </div>
                     
                     <div className="border-t border-gray-100 my-1"></div>
