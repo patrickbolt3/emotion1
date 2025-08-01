@@ -37,12 +37,16 @@ const QuestionsManagement: React.FC = () => {
   const [harmonicStates, setHarmonicStates] = useState<HarmonicState[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterState, setFilterState] = useState<string>('all');
+  const [selectedQuestions, setSelectedQuestions] = useState<Set<string>>(new Set());
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [questionToDelete, setQuestionToDelete] = useState<string | null>(null);
 
   // Form state for new/editing questions
   const [formData, setFormData] = useState({
@@ -167,19 +171,46 @@ const QuestionsManagement: React.FC = () => {
   };
 
   const handleDeleteQuestion = async (questionId: string) => {
-    if (!confirm('Are you sure you want to delete this question? This action cannot be undone.')) {
+    setQuestionToDelete(questionId);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedQuestions.size === 0) {
+      setMessage({ type: 'error', text: 'Please select questions to delete' });
       return;
     }
+    setQuestionToDelete(null);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    setDeleting(true);
+    setShowDeleteConfirm(false);
 
     try {
-      const { error } = await supabase
-        .from('questions')
-        .delete()
-        .eq('id', questionId);
+      if (questionToDelete) {
+        // Single delete
+        const { error } = await supabase
+          .from('questions')
+          .delete()
+          .eq('id', questionToDelete);
 
-      if (error) throw error;
+        if (error) throw error;
+        setMessage({ type: 'success', text: 'Question deleted successfully' });
+      } else {
+        // Bulk delete
+        const questionIds = Array.from(selectedQuestions);
+        const { error } = await supabase
+          .from('questions')
+          .delete()
+          .in('id', questionIds);
 
-      setMessage({ type: 'success', text: 'Question deleted successfully' });
+        if (error) throw error;
+        setMessage({ type: 'success', text: `${questionIds.length} questions deleted successfully` });
+        setSelectedQuestions(new Set());
+      }
+
       await fetchData();
       
       // Clear message after 3 seconds
@@ -187,6 +218,27 @@ const QuestionsManagement: React.FC = () => {
     } catch (err: any) {
       console.error('Error deleting question:', err);
       setMessage({ type: 'error', text: err.message || 'Failed to delete question' });
+    } finally {
+      setDeleting(false);
+      setQuestionToDelete(null);
+    }
+  };
+
+  const handleSelectQuestion = (questionId: string) => {
+    const newSelected = new Set(selectedQuestions);
+    if (newSelected.has(questionId)) {
+      newSelected.delete(questionId);
+    } else {
+      newSelected.add(questionId);
+    }
+    setSelectedQuestions(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedQuestions.size === filteredQuestions.length) {
+      setSelectedQuestions(new Set());
+    } else {
+      setSelectedQuestions(new Set(filteredQuestions.map(q => q.id)));
     }
   };
 
@@ -232,10 +284,18 @@ const QuestionsManagement: React.FC = () => {
             <p className="text-gray-600">Manage assessment questions and their harmonic states</p>
           </div>
         </div>
-        <Button onClick={handleAddQuestion}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Question
-        </Button>
+        <div className="flex space-x-3">
+          {selectedQuestions.size > 0 && (
+            <Button variant="destructive" onClick={handleBulkDelete} disabled={deleting}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Selected ({selectedQuestions.size})
+            </Button>
+          )}
+          <Button onClick={handleAddQuestion}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Question
+          </Button>
+        </div>
       </div>
 
       {message && (
@@ -399,6 +459,14 @@ const QuestionsManagement: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <input
+                      type="checkbox"
+                      checked={selectedQuestions.size === filteredQuestions.length && filteredQuestions.length > 0}
+                      onChange={handleSelectAll}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Order
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -415,6 +483,14 @@ const QuestionsManagement: React.FC = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredQuestions.map((question) => (
                   <tr key={question.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={selectedQuestions.has(question.id)}
+                        onChange={() => handleSelectQuestion(question.id)}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
                         #{question.order}
@@ -448,6 +524,7 @@ const QuestionsManagement: React.FC = () => {
                         <button
                           onClick={() => handleDeleteQuestion(question.id)}
                           className="text-red-600 hover:text-red-900 flex items-center"
+                          disabled={deleting}
                         >
                           <Trash2 className="h-4 w-4 mr-1" />
                           Delete
@@ -461,6 +538,80 @@ const QuestionsManagement: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0">
+                  <AlertTriangle className="h-6 w-6 text-red-600" />
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Confirm Deletion
+                  </h3>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <p className="text-sm text-gray-600">
+                  {questionToDelete 
+                    ? "Are you sure you want to delete this question? This action cannot be undone."
+                    : `Are you sure you want to delete ${selectedQuestions.size} selected questions? This action cannot be undone.`
+                  }
+                </p>
+                
+                {!questionToDelete && selectedQuestions.size > 0 && (
+                  <div className="mt-3 p-3 bg-red-50 rounded-md">
+                    <p className="text-sm text-red-800 font-medium">
+                      Questions to be deleted:
+                    </p>
+                    <ul className="mt-1 text-sm text-red-700 max-h-32 overflow-y-auto">
+                      {filteredQuestions
+                        .filter(q => selectedQuestions.has(q.id))
+                        .map(q => (
+                          <li key={q.id} className="truncate">
+                            #{q.order}: {q.question_text.substring(0, 50)}...
+                          </li>
+                        ))
+                      }
+                    </ul>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex justify-end space-x-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleting}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={confirmDelete}
+                  disabled={deleting}
+                >
+                  {deleting ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete {questionToDelete ? 'Question' : `${selectedQuestions.size} Questions`}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
