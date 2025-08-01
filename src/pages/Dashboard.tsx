@@ -230,7 +230,7 @@ const MobileDashboardNav: React.FC = () => {
             <span className="text-xs mt-1 text-blue-600">Assessment</span>
           </Link>
         ) : (
-          <Link to="/dashboard/clients" className="flex flex-col items-center px-4 py-2">
+          <Link to="/dashboard/users/respondents" className="flex flex-col items-center px-4 py-2">
             <Users className="h-6 w-6 text-gray-600" />
             <span className="text-xs mt-1 text-gray-600">Clients</span>
           </Link>
