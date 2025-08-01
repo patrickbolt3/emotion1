@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
-import { InviteClientModal } from '../../components/InviteClientModal';
+import InviteClientModal from '../../components/InviteClientModal';
 import { BarChart3, Clock, UserPlus, Users } from 'lucide-react';
 
 interface ClientProfile {
