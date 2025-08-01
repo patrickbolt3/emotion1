@@ -297,9 +297,10 @@ const Results: React.FC = () => {
       pdf.text(splitAiInsight, 20, 175);
       
       // Add coaching tips if available
+      let currentYPosition: number;
       if (state?.coaching_tips) {
         // Check if we need a new page for the Understanding section
-        let currentYPosition = 200;
+        currentYPosition = 200;
         if (currentYPosition > 200) {
           pdf.addPage();
           currentYPosition = 30;
