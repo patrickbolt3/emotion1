@@ -421,7 +421,7 @@ const AdminSettings: React.FC = () => {
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Button variant="outline" className="justify-start" onClick={() => setMessage({ type: 'info', text: 'Database backup feature coming soon' })}>
+          <Button variant="outline" className="justify-start" onClick={handleBackupDatabase}>
             <Database className="h-4 w-4 mr-2" />
             Backup Database
           </Button>
