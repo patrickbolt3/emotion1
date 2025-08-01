@@ -378,14 +378,6 @@ const Results: React.FC = () => {
             <span className="ml-2 font-semibold text-gray-900">Emotional Dynamics Indicator™</span>
           </div>
           <div className="flex space-x-2">
-            <Button variant="ghost" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Save PDF
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
-            </Button>
             <Button variant="ghost" size="sm" onClick={handleSavePDF}>
               <Download className="h-4 w-4 mr-2" />
               Save PDF
