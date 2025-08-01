@@ -169,9 +169,6 @@ const CoachDashboard: React.FC = () => {
           <p className="text-gray-600 mb-6">
             Invite clients to take the Emotional Dynamics assessment and coach them based on their results.
           </p>
-          <Link to="/dashboard/invite">
-            <Button>Invite Client</Button>
-          </Link>
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
