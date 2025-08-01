@@ -169,10 +169,13 @@ const AdminCoaches: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {coach.trainer_name ? (
-                        <div className="text-sm text-gray-900">{coach.trainer_name}</div>
+                      {coach.email ? (
+                        <div className="flex items-center">
+                          <Mail className="h-4 w-4 text-gray-400 mr-2" />
+                          <span className="text-sm text-gray-900">{coach.email}</span>
+                        </div>
                       ) : (
-                        <span className="text-sm text-gray-400">No trainer assigned</span>
+                        <span className="text-sm text-gray-400">No email available</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
