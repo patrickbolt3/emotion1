@@ -21,6 +21,8 @@ import TrainerDashboard from './dashboard/TrainerDashboard';
 import AdminDashboard from './dashboard/AdminDashboard';
 import NewAssessment from './dashboard/NewAssessment';
 import Profile from './dashboard/Profile';
+import AdminCoaches from './dashboard/AdminCoaches';
+import AdminRespondents from './dashboard/AdminRespondents';
 import NotFound from './NotFound';
 
 // Hook to get user role from database
@@ -279,6 +281,8 @@ const Dashboard: React.FC = () => {
           <Route path="/" element={getDashboardComponent()} />
           <Route path="/new-assessment" element={<NewAssessment />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/users/coaches" element={<AdminCoaches />} />
+          <Route path="/users/respondents" element={<AdminRespondents />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
