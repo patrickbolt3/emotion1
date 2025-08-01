@@ -149,14 +149,17 @@ const AdminCoaches: React.FC = () => {
                 {coaches.map((coach) => (
                   <tr key={coach.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {coach.email ? (
-                        <div className="flex items-center text-sm text-gray-900">
-                          <Mail className="h-4 w-4 mr-1 text-gray-400" />
-                          {coach.email}
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-medium">
+                          {coach.first_name?.[0] || 'C'}{coach.last_name?.[0] || ''}
                         </div>
-                      ) : (
-                        <span className="text-sm text-gray-400">Email not available</span>
-                      )}
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {coach.first_name || 'Unknown'} {coach.last_name || 'Coach'}
+                          </div>
+                          <div className="text-sm text-gray-500">ID: {coach.id.slice(0, 8)}...</div>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
