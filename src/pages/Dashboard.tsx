@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import { Button } from '../components/ui/Button';
 import { 
   Brain, 
@@ -22,11 +23,47 @@ import NewAssessment from './dashboard/NewAssessment';
 import Profile from './dashboard/Profile';
 import NotFound from './NotFound';
 
+// Hook to get user role from database
+const useUserRole = () => {
+  const { user } = useAuth();
+  const [role, setRole] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchUserRole = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if (error) throw error;
+        setRole(data?.role || 'respondent');
+      } catch (err) {
+        console.error('Error fetching user role:', err);
+        setRole('respondent'); // Default fallback
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserRole();
+  }, [user]);
+
+  return { role, loading };
+};
+
 const DashboardNav: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const userRole = user?.user_metadata?.role || 'respondent';
+  const { role: userRole } = useUserRole();
   
   const handleSignOut = async () => {
     await signOut();
@@ -169,7 +206,7 @@ const DashboardNav: React.FC = () => {
 
 const MobileDashboardNav: React.FC = () => {
   const { user } = useAuth();
-  const userRole = user?.user_metadata?.role || 'respondent';
+  const { role: userRole } = useUserRole();
   
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-2">
@@ -202,7 +239,21 @@ const MobileDashboardNav: React.FC = () => {
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const userRole = user?.user_metadata?.role || 'respondent';
+  const { role: userRole, loading: roleLoading } = useUserRole();
+  
+  // Show loading while fetching role
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   // Render the appropriate dashboard based on user role
   const getDashboardComponent = () => {
