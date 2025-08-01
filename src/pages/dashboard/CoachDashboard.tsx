@@ -21,9 +21,15 @@ interface ClientProfile {
 const CoachDashboard: React.FC = () => {
   const { user } = useAuth();
   const [clients, setClients] = useState<ClientProfile[]>([]);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [totalClients, setTotalClients] = useState(0);
   const [assessmentsCount, setAssessmentsCount] = useState(0);
+  
+  const handleInviteSuccess = () => {
+    setShowInviteModal(false);
+    fetchClients(); // Refresh the client list
+  };
   
   useEffect(() => {
     const fetchClients = async () => {
@@ -99,12 +105,10 @@ const CoachDashboard: React.FC = () => {
     <div>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Coach Dashboard</h1>
-        <Link to="/dashboard/invite">
-          <Button>
-            <UserPlus className="h-4 w-4 mr-2" />
-            Invite Client
-          </Button>
-        </Link>
+        <Button onClick={() => setShowInviteModal(true)}>
+          <UserPlus className="h-4 w-4 mr-2" />
+          Invite Client
+        </Button>
       </div>
       
       {/* Stats Cards */}
@@ -258,6 +262,12 @@ const CoachDashboard: React.FC = () => {
           </table>
         </div>
       )}
+      
+      <InviteClientModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        onSuccess={handleInviteSuccess}
+      />
     </div>
   );
 };

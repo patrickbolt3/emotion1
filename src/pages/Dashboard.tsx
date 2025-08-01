@@ -127,7 +127,10 @@ const DashboardNav: React.FC = () => {
               <Button 
                 size="sm" 
                 className="mr-4"
-                onClick={() => navigate('/dashboard/invite')}
+                onClick={() => {
+                  // This will be handled by the CoachDashboard component
+                  // We can remove this button or make it trigger the modal
+                }}
               >
                 <UserPlus className="h-4 w-4 mr-2" />
                 Invite Client
