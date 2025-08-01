@@ -563,10 +563,6 @@ const Results: React.FC = () => {
               <Download className="h-4 w-4 mr-2" />
               Save PDF
             </Button>
-            <Button variant="ghost" size="sm" onClick={handleShare}>
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
-            </Button>
           </div>
         </div>
       </header>
