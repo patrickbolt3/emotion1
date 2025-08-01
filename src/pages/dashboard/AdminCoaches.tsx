@@ -22,7 +22,7 @@ const AdminCoaches: React.FC = () => {
   useEffect(() => {
     const fetchCoaches = async () => {
       try {
-        // Get all coaches with their trainer info
+        // Get all coaches with their email from auth.users
         const { data: coachData, error: coachError } = await supabase
           .from('profiles')
           .select(`
@@ -30,20 +30,19 @@ const AdminCoaches: React.FC = () => {
             first_name,
             last_name,
             created_at,
-            trainer_id,
-            trainer:trainer_id (
-              first_name,
-              last_name
-            )
+            trainer_id
           `)
           .eq('role', 'coach')
           .order('created_at', { ascending: false });
 
         if (coachError) throw coachError;
 
-        // Get client counts for each coach
+        // Get client counts and email for each coach
         const coachesWithCounts = await Promise.all(
           (coachData || []).map(async (coach) => {
+            // Get email from auth.users
+            const { data: userData, error: userError } = await supabase.auth.admin.getUserById(coach.id);
+            
             const { count, error: countError } = await supabase
               .from('profiles')
               .select('id', { count: 'exact', head: true })
@@ -54,9 +53,7 @@ const AdminCoaches: React.FC = () => {
             return {
               ...coach,
               client_count: count || 0,
-              trainer_name: coach.trainer 
-                ? `${coach.trainer.first_name || ''} ${coach.trainer.last_name || ''}`.trim()
-                : null
+              email: userData?.user?.email || null
             };
           })
         );
