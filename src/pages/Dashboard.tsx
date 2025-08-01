@@ -284,7 +284,7 @@ const Dashboard: React.FC = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/users/coaches" element={<AdminCoaches />} />
           <Route path="/users/respondents" element={<AdminRespondents />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="/respondent/:id" element={<RespondentDetails />} />
         </Routes>
       </main>
       

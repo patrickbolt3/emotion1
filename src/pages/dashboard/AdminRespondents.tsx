@@ -248,7 +248,7 @@ const AdminRespondents: React.FC = () => {
                           </Link>
                         )}
                         <Link 
-                          to={`/dashboard/users/respondent/${respondent.id}`}
+                          to={`/dashboard/respondent/${respondent.id}`}
                           className="text-blue-600 hover:text-blue-900"
                         >
                           View Details
