@@ -23,6 +23,7 @@ import NewAssessment from './dashboard/NewAssessment';
 import Profile from './dashboard/Profile';
 import AdminCoaches from './dashboard/AdminCoaches';
 import AdminRespondents from './dashboard/AdminRespondents';
+import AdminSettings from './dashboard/AdminSettings';
 import RespondentDetails from './dashboard/RespondentDetails';
 import CoachDetails from './dashboard/CoachDetails';
 import NotFound from './NotFound';
@@ -289,6 +290,7 @@ const Dashboard: React.FC = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/users/coaches" element={<AdminCoaches />} />
           <Route path="/users/respondents" element={<AdminRespondents />} />
+          <Route path="/settings" element={<AdminSettings />} />
           <Route path="/respondent/:id" element={<RespondentDetails />} />
           <Route path="/coach/:id" element={<CoachDetails />} />
         </Routes>
