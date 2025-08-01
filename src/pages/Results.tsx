@@ -285,16 +285,27 @@ const Results: React.FC = () => {
       const splitDescription = pdf.splitTextToSize(description, 170);
       pdf.text(splitDescription, 20, 135);
       
+      // AI Insight section
+      pdf.setFontSize(14);
+      pdf.setTextColor(r, g, b);
+      pdf.text('AI Insight:', 20, 165);
+      
+      pdf.setFontSize(11);
+      pdf.setTextColor(0, 0, 0);
+      const aiInsight = `Hey ${result?.user.firstName}! It looks like you're currently operating from a state of ${state?.name}. This doesn't mean you're stuck — it means you have a particular emotional pattern that influences how you perceive and interact with the world. Understanding this can be a powerful first step toward growth and transformation. Want to learn how to evolve this into an even more empowering state?`;
+      const splitAiInsight = pdf.splitTextToSize(aiInsight, 170);
+      pdf.text(splitAiInsight, 20, 175);
+      
       // Add coaching tips if available
       if (state?.coaching_tips) {
         pdf.setFontSize(14);
         pdf.setTextColor(r, g, b);
-        pdf.text('Understanding Your Dominant State:', 20, 180);
+        pdf.text('Understanding Your Dominant State:', 20, 200);
         
         // Strengths section
         pdf.setFontSize(12);
         pdf.setTextColor(r, g, b);
-        pdf.text(`Strengths of ${state.name}:`, 20, 200);
+        pdf.text(`Strengths of ${state.name}:`, 20, 220);
         
         pdf.setFontSize(10);
         pdf.setTextColor(0, 0, 0);
@@ -336,7 +347,7 @@ const Results: React.FC = () => {
         };
         
         const strengths = getStrengths(state.name);
-        let yPosition = 210;
+        let yPosition = 230;
         strengths.forEach(strength => {
           pdf.text(strength, 25, yPosition);
           yPosition += 10;
