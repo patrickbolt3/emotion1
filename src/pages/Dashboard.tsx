@@ -24,6 +24,7 @@ import Profile from './dashboard/Profile';
 import AdminCoaches from './dashboard/AdminCoaches';
 import AdminRespondents from './dashboard/AdminRespondents';
 import RespondentDetails from './dashboard/RespondentDetails';
+import CoachDetails from './dashboard/CoachDetails';
 import NotFound from './NotFound';
 
 // Hook to get user role from database
