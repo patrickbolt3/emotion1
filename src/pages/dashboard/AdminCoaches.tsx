@@ -9,9 +9,8 @@ interface Coach {
   first_name: string | null;
   last_name: string | null;
   created_at: string;
-  trainer_id: string | null;
+  email: string | null;
   client_count: number;
-  trainer_name?: string;
 }
 
 const AdminCoaches: React.FC = () => {
@@ -22,27 +21,24 @@ const AdminCoaches: React.FC = () => {
   useEffect(() => {
     const fetchCoaches = async () => {
       try {
-        // Get all coaches with their email from auth.users
+        // Get all coaches
         const { data: coachData, error: coachError } = await supabase
           .from('profiles')
           .select(`
             id,
             first_name,
             last_name,
-            created_at,
-            trainer_id
+            created_at
           `)
           .eq('role', 'coach')
           .order('created_at', { ascending: false });
 
         if (coachError) throw coachError;
 
-        // Get client counts and email for each coach
+        // Get client counts for each coach and try to get email from user metadata
         const coachesWithCounts = await Promise.all(
           (coachData || []).map(async (coach) => {
-            // Get email from auth.users
-            const { data: userData, error: userError } = await supabase.auth.admin.getUserById(coach.id);
-            
+            // Get client count
             const { count, error: countError } = await supabase
               .from('profiles')
               .select('id', { count: 'exact', head: true })
@@ -50,10 +46,21 @@ const AdminCoaches: React.FC = () => {
 
             if (countError) throw countError;
 
+            // Try to get email from current user if it's the same user, otherwise show placeholder
+            let email = null;
+            try {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user && user.id === coach.id) {
+                email = user.email;
+              }
+            } catch (error) {
+              // Ignore error, email will remain null
+            }
+
             return {
               ...coach,
               client_count: count || 0,
-              email: userData?.user?.email || null
+              email: email
             };
           })
         );
@@ -139,7 +146,7 @@ const AdminCoaches: React.FC = () => {
                     Coach
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Trainer
+                    Email
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Clients
@@ -169,7 +176,14 @@ const AdminCoaches: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">No email available</span>
+                      {coach.email ? (
+                        <div className="flex items-center text-sm text-gray-900">
+                          <Mail className="h-4 w-4 mr-1 text-gray-400" />
+                          {coach.email}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-400">Email not available</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
