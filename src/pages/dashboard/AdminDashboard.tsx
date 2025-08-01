@@ -315,18 +315,6 @@ const AdminDashboard: React.FC = () => {
               </svg>
             </Link>
             
-            <Link to="/dashboard/users/admins" className="flex items-center p-3 rounded-lg hover:bg-gray-50">
-              <div className="rounded-full p-2 bg-red-100 mr-3">
-                <Settings className="h-5 w-5 text-red-600" />
-              </div>
-              <div>
-                <h4 className="text-base font-medium text-gray-900">Administrators</h4>
-                <p className="text-sm text-gray-500">{stats.user_roles.admin} users</p>
-              </div>
-              <svg className="ml-auto h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
           </div>
         </div>
       </div>

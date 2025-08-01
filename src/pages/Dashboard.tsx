@@ -23,6 +23,7 @@ import NewAssessment from './dashboard/NewAssessment';
 import Profile from './dashboard/Profile';
 import AdminCoaches from './dashboard/AdminCoaches';
 import AdminRespondents from './dashboard/AdminRespondents';
+import RespondentDetails from './dashboard/RespondentDetails';
 import NotFound from './NotFound';
 
 // Hook to get user role from database
