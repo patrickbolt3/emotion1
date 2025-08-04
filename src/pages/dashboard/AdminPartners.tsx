@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../../components/ui/Button';
-import { ArrowLeft, Handshake, Users, Calendar, MoreVertical, Plus } from 'lucide-react';
+import { ArrowLeft, Handshake, Users, Calendar, MoreVertical, Plus, Search, Filter, SortAsc, SortDesc } from 'lucide-react';
 
 interface Partner {
   id: string;
@@ -26,6 +26,11 @@ const AdminPartners: React.FC = () => {
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Search and filter state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'email' | 'created_at' | 'coach_count'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     fetchPartners();
@@ -132,6 +137,63 @@ const AdminPartners: React.FC = () => {
     }
   };
 
+  // Filter and sort partners
+  const filteredAndSortedPartners = React.useMemo(() => {
+    let filtered = partners.filter(partner => {
+      const searchLower = searchTerm.toLowerCase();
+      const fullName = `${partner.first_name || ''} ${partner.last_name || ''}`.toLowerCase();
+      return (
+        fullName.includes(searchLower) ||
+        partner.email.toLowerCase().includes(searchLower)
+      );
+    });
+
+    // Sort the filtered results
+    filtered.sort((a, b) => {
+      let aValue: string | number;
+      let bValue: string | number;
+
+      switch (sortBy) {
+        case 'name':
+          aValue = `${a.first_name || ''} ${a.last_name || ''}`.toLowerCase();
+          bValue = `${b.first_name || ''} ${b.last_name || ''}`.toLowerCase();
+          break;
+        case 'email':
+          aValue = a.email.toLowerCase();
+          bValue = b.email.toLowerCase();
+          break;
+        case 'created_at':
+          aValue = new Date(a.created_at).getTime();
+          bValue = new Date(b.created_at).getTime();
+          break;
+        case 'coach_count':
+          aValue = a.coach_count;
+          bValue = b.coach_count;
+          break;
+        default:
+          aValue = a.first_name || '';
+          bValue = b.first_name || '';
+      }
+
+      if (sortOrder === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+
+    return filtered;
+  }, [partners, searchTerm, sortBy, sortOrder]);
+
+  const handleSort = (field: typeof sortBy) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -174,7 +236,7 @@ const AdminPartners: React.FC = () => {
         </div>
         <div className="flex items-center space-x-4">
           <div className="text-sm text-gray-500">
-            Total: {partners.length} partners
+            Showing: {filteredAndSortedPartners.length} of {partners.length} partners
           </div>
           <Button onClick={() => setShowAddForm(true)}>
             <Plus className="h-4 w-4 mr-2" />
@@ -192,6 +254,43 @@ const AdminPartners: React.FC = () => {
           {message.text}
         </div>
       )}
+
+      {/* Search and Filter Controls */}
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search partners by name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Filter className="h-4 w-4 text-gray-400" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="name">Sort by Name</option>
+              <option value="email">Sort by Email</option>
+              <option value="created_at">Sort by Date Joined</option>
+              <option value="coach_count">Sort by Coach Count</option>
+            </select>
+            <button
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              className="p-2 border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              {sortOrder === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Add Partner Form */}
       {showAddForm && (
@@ -269,7 +368,23 @@ const AdminPartners: React.FC = () => {
         </div>
       )}
 
-      {partners.length === 0 ? (
+      {filteredAndSortedPartners.length === 0 ? (
+        searchTerm ? (
+          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+            <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+              <Search className="h-6 w-6 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No partners found
+            </h3>
+            <p className="text-gray-600 mb-4">
+              No partners match your search criteria "{searchTerm}".
+            </p>
+            <Button variant="outline" onClick={() => setSearchTerm('')}>
+              Clear Search
+            </Button>
+          </div>
+        ) : (
         <div className="bg-white rounded-lg shadow-sm p-8 text-center">
           <div className="mx-auto w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-4">
             <Handshake className="h-6 w-6 text-purple-600" />
@@ -285,23 +400,60 @@ const AdminPartners: React.FC = () => {
             Add First Partner
           </Button>
         </div>
+        )
       ) : (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th 
+                    scope="col" 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('name')}
+                  >
+                    <div className="flex items-center">
                     Partner
+                      {sortBy === 'name' && (
+                        sortOrder === 'asc' ? <SortAsc className="ml-1 h-3 w-3" /> : <SortDesc className="ml-1 h-3 w-3" />
+                      )}
+                    </div>
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th 
+                    scope="col" 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('email')}
+                  >
+                    <div className="flex items-center">
                     Email
+                      {sortBy === 'email' && (
+                        sortOrder === 'asc' ? <SortAsc className="ml-1 h-3 w-3" /> : <SortDesc className="ml-1 h-3 w-3" />
+                      )}
+                    </div>
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th 
+                    scope="col" 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('coach_count')}
+                  >
+                    <div className="flex items-center">
                     Coaches
+                      {sortBy === 'coach_count' && (
+                        sortOrder === 'asc' ? <SortAsc className="ml-1 h-3 w-3" /> : <SortDesc className="ml-1 h-3 w-3" />
+                      )}
+                    </div>
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th 
+                    scope="col" 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('created_at')}
+                  >
+                    <div className="flex items-center">
                     Joined
+                      {sortBy === 'created_at' && (
+                        sortOrder === 'asc' ? <SortAsc className="ml-1 h-3 w-3" /> : <SortDesc className="ml-1 h-3 w-3" />
+                      )}
+                    </div>
                   </th>
                   <th scope="col" className="relative px-6 py-3">
                     <span className="sr-only">Actions</span>
@@ -309,7 +461,7 @@ const AdminPartners: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {partners.map((partner) => (
+                {filteredAndSortedPartners.map((partner) => (
                   <tr key={partner.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
