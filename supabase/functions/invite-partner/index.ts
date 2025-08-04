@@ -82,8 +82,26 @@ Deno.serve(async (req) => {
 
     if (authError) {
       console.error('Auth error:', authError)
+      
+      // Provide more specific error messages based on the error
+      let errorMessage = 'Failed to create user account'
+      
+      if (authError.message) {
+        if (authError.message.includes('User already registered') || 
+            authError.message.includes('already been registered')) {
+          errorMessage = 'A user with this email address already exists'
+        } else if (authError.message.includes('Invalid email')) {
+          errorMessage = 'Please provide a valid email address'
+        } else if (authError.message.includes('Password')) {
+          errorMessage = 'Password requirements not met'
+        } else {
+          // Return the actual error message if it's informative
+          errorMessage = authError.message
+        }
+      }
+      
       return new Response(
-        JSON.stringify({ error: 'Failed to create user account' }),
+        JSON.stringify({ error: errorMessage }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
