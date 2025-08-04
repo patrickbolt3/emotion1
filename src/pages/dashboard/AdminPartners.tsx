@@ -250,7 +250,7 @@ const AdminPartners: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="mb-6">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                   Email Address *
@@ -265,22 +265,16 @@ const AdminPartners: React.FC = () => {
                   placeholder="Enter email address"
                 />
               </div>
-              
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Password *
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter password"
-                  minLength={6}
-                />
-              </div>
+            </div>
+
+            <div className="mb-6 bg-blue-50 border border-blue-200 rounded-md p-4">
+              <h4 className="text-sm font-medium text-blue-800 mb-2">What happens next?</h4>
+              <ul className="text-sm text-blue-700 space-y-1">
+                <li>• A partner account will be created with a secure temporary password</li>
+                <li>• They'll receive an email with their login credentials</li>
+                <li>• They can log in and manage trainers and coaches</li>
+                <li>• They'll be prompted to change their password on first login</li>
+              </ul>
             </div>
 
             <div className="flex justify-end space-x-3">
@@ -289,7 +283,7 @@ const AdminPartners: React.FC = () => {
                 variant="outline" 
                 onClick={() => {
                   setShowAddForm(false);
-                  setFormData({ firstName: '', lastName: '', email: '', password: '' });
+                  setFormData({ firstName: '', lastName: '', email: '' });
                   setMessage(null);
                 }}
                 disabled={saving}
@@ -297,7 +291,7 @@ const AdminPartners: React.FC = () => {
                 Cancel
               </Button>
               <Button type="submit" disabled={saving}>
-                {saving ? 'Adding Partner...' : 'Add Partner'}
+                {saving ? 'Sending Invitation...' : 'Send Invitation'}
               </Button>
             </div>
           </form>
