@@ -17,7 +17,6 @@ import {
 // Dashboard sub-pages
 import RespondentDashboard from './dashboard/RespondentDashboard';
 import CoachDashboard from './dashboard/CoachDashboard';
-import TrainerDashboard from './dashboard/TrainerDashboard';
 import PartnerDashboard from './dashboard/PartnerDashboard';
 import AdminDashboard from './dashboard/AdminDashboard';
 import NewAssessment from './dashboard/NewAssessment';
@@ -309,9 +308,6 @@ const Dashboard: React.FC = () => {
       case 'partner':
         console.log('Rendering PartnerDashboard');
         return <PartnerDashboard />;
-      case 'trainer':
-        console.log('Rendering TrainerDashboard');
-        return <TrainerDashboard />;
       case 'coach':
         console.log('Rendering CoachDashboard');
         return <CoachDashboard />;
