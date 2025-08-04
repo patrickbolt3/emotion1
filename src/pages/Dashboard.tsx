@@ -18,6 +18,7 @@ import {
 import RespondentDashboard from './dashboard/RespondentDashboard';
 import CoachDashboard from './dashboard/CoachDashboard';
 import TrainerDashboard from './dashboard/TrainerDashboard';
+import PartnerDashboard from './dashboard/PartnerDashboard';
 import AdminDashboard from './dashboard/AdminDashboard';
 import NewAssessment from './dashboard/NewAssessment';
 import Profile from './dashboard/Profile';
@@ -284,6 +285,8 @@ const Dashboard: React.FC = () => {
     switch (userRole) {
       case 'admin':
         return <AdminDashboard />;
+      case 'partner':
+        return <PartnerDashboard />;
       case 'trainer':
         return <TrainerDashboard />;
       case 'coach':
