@@ -459,30 +459,4 @@ const AdminRespondents: React.FC = () => {
   );
 };
 
-      {filteredAndSortedRespondents.length === 0 ? (
-        searchTerm || filterStatus !== 'all' ? (
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-              <Search className="h-6 w-6 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No respondents found
-            </h3>
-            <p className="text-gray-600 mb-4">
-              No respondents match your search criteria.
-            </p>
-            <div className="flex justify-center space-x-2">
-              {searchTerm && (
-                <Button variant="outline" onClick={() => setSearchTerm('')}>
-                  Clear Search
-                </Button>
-              )}
-              {filterStatus !== 'all' && (
-                <Button variant="outline" onClick={() => setFilterStatus('all')}>
-                  Clear Filter
-                </Button>
-              )}
-            </div>
-          </div>
-        ) : (
 export default AdminRespondents;
