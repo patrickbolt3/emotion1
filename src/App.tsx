@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/AuthContext';
 
@@ -21,6 +21,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Component to handle automatic redirects for logged in users
 const AppRoutes: React.FC = () => {
   const { user, loading } = useAuth();
+  const location = useLocation();
   
   // Show loading while checking auth state
   if (loading) {

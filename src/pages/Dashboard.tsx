@@ -48,6 +48,7 @@ const useUserRole = () => {
 
       try {
         console.log('Fetching role for user:', user.id);
+        console.log('User email:', user.email);
         const { data, error } = await supabase
           .from('profiles')
           .select('role')
@@ -56,12 +57,19 @@ const useUserRole = () => {
 
         if (error) {
           console.error('Database error fetching role:', error);
+          console.error('Error details:', error.message, error.code, error.details);
           throw error;
         }
         
         console.log('User role from database:', data?.role);
         console.log('Full profile data:', data);
-        setRole(data?.role || 'respondent');
+        
+        if (!data) {
+          console.error('No profile data returned for user:', user.id);
+          setRole('respondent'); // Default fallback
+        } else {
+          setRole(data.role || 'respondent');
+        }
       } catch (err) {
         console.error('Error fetching user role:', err);
         // If it's a connection error, show a more helpful message
@@ -292,17 +300,24 @@ const Dashboard: React.FC = () => {
   // Render the appropriate dashboard based on user role
   const getDashboardComponent = () => {
     console.log('Rendering dashboard for role:', userRole);
+    console.log('User object in getDashboardComponent:', user);
+    
     switch (userRole) {
       case 'admin':
+        console.log('Rendering AdminDashboard');
         return <AdminDashboard />;
       case 'partner':
+        console.log('Rendering PartnerDashboard');
         return <PartnerDashboard />;
       case 'trainer':
+        console.log('Rendering TrainerDashboard');
         return <TrainerDashboard />;
       case 'coach':
+        console.log('Rendering CoachDashboard');
         return <CoachDashboard />;
       case 'respondent':
       default:
+        console.log('Rendering RespondentDashboard (default)');
         return <RespondentDashboard />;
     }
   };
