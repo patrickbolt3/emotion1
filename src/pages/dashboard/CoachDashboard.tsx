@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
@@ -26,65 +26,65 @@ const CoachDashboard: React.FC = () => {
   const [totalClients, setTotalClients] = useState(0);
   const [assessmentsCount, setAssessmentsCount] = useState(0);
   
+  const fetchClients = useCallback(async () => {
+    try {
+      if (!user) return;
+      
+      // Get clients for this coach
+      const { data: clientProfiles, error: clientsError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name')
+        .eq('coach_id', user.id)
+        .order('first_name', { ascending: true });
+      
+      if (clientsError) throw clientsError;
+      
+      // Get latest assessment for each client
+      const clientsWithAssessments = await Promise.all(
+        (clientProfiles || []).map(async (client) => {
+          const { data: assessments, error: assessmentError } = await supabase
+            .from('assessments')
+            .select('id, created_at, completed, dominant_state')
+            .eq('user_id', client.id)
+            .order('created_at', { ascending: false })
+            .limit(1);
+          
+          if (assessmentError) throw assessmentError;
+          
+          return {
+            ...client,
+            latest_assessment: assessments && assessments.length > 0 ? assessments[0] : undefined
+          };
+        })
+      );
+      
+      setClients(clientsWithAssessments);
+      setTotalClients(clientsWithAssessments.length);
+      
+      // Count total assessments
+      const { count, error: countError } = await supabase
+        .from('assessments')
+        .select('id', { count: 'exact', head: true })
+        .in('user_id', clientsWithAssessments.map(c => c.id));
+      
+      if (countError) throw countError;
+      
+      setAssessmentsCount(count || 0);
+    } catch (err) {
+      console.error('Error fetching clients:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+  
   const handleInviteSuccess = () => {
     setShowInviteModal(false);
     fetchClients(); // Refresh the client list
   };
   
   useEffect(() => {
-    const fetchClients = async () => {
-      try {
-        if (!user) return;
-        
-        // Get clients for this coach
-        const { data: clientProfiles, error: clientsError } = await supabase
-          .from('profiles')
-          .select('id, first_name, last_name')
-          .eq('coach_id', user.id)
-          .order('first_name', { ascending: true });
-        
-        if (clientsError) throw clientsError;
-        
-        // Get latest assessment for each client
-        const clientsWithAssessments = await Promise.all(
-          (clientProfiles || []).map(async (client) => {
-            const { data: assessments, error: assessmentError } = await supabase
-              .from('assessments')
-              .select('id, created_at, completed, dominant_state')
-              .eq('user_id', client.id)
-              .order('created_at', { ascending: false })
-              .limit(1);
-            
-            if (assessmentError) throw assessmentError;
-            
-            return {
-              ...client,
-              latest_assessment: assessments && assessments.length > 0 ? assessments[0] : undefined
-            };
-          })
-        );
-        
-        setClients(clientsWithAssessments);
-        setTotalClients(clientsWithAssessments.length);
-        
-        // Count total assessments
-        const { count, error: countError } = await supabase
-          .from('assessments')
-          .select('id', { count: 'exact', head: true })
-          .in('user_id', clientsWithAssessments.map(c => c.id));
-        
-        if (countError) throw countError;
-        
-        setAssessmentsCount(count || 0);
-      } catch (err) {
-        console.error('Error fetching clients:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     fetchClients();
-  }, [user]);
+  }, [fetchClients]);
   
   if (loading) {
     return (
