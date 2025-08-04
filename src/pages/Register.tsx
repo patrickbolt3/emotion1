@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 import { Brain } from 'lucide-react';
@@ -13,10 +13,6 @@ const Register: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  
-  // Get role from query params or default to respondent
-  const role = searchParams.get('role') === 'coach' ? 'coach' : 'respondent';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +22,7 @@ const Register: React.FC = () => {
     try {
       // Register with role and user data
       const metadata = {
-        role,
+        role: 'respondent',
         firstName,
         lastName
       };
@@ -40,13 +36,8 @@ const Register: React.FC = () => {
         throw error;
       }
       
-      // Redirect to dashboard or assessment based on role
-      if (role === 'coach') {
-        navigate('/dashboard');
-      } else {
-        // For respondents, create a new assessment and redirect to it
-        navigate('/dashboard/new-assessment');
-      }
+      // For respondents, redirect to dashboard
+      navigate('/dashboard');
     } catch (err: any) {
       console.error('Error details:', err);
       setError(err.message || 'Failed to create account');
@@ -155,42 +146,6 @@ const Register: React.FC = () => {
               </div>
             </div>
 
-            <div>
-              <div className="bg-blue-50 rounded-md p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <Brain className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-blue-800">
-                      Creating account as {role === 'coach' ? 'a coach' : 'a respondent'}
-                    </h3>
-                    <div className="mt-2 text-sm text-blue-700">
-                      <p>
-                        {role === 'coach' 
-                          ? "You'll be able to invite clients and view their results."
-                          : "You'll be able to take the Emotional Dynamics assessment."}
-                      </p>
-                    </div>
-                    <div className="mt-2">
-                      {role === 'coach' ? (
-                        <Link to="/register">
-                          <Button size="sm" variant="outline">
-                            Switch to respondent account
-                          </Button>
-                        </Link>
-                      ) : (
-                        <Link to="/register?role=coach">
-                          <Button size="sm" variant="outline">
-                            Switch to coach account
-                          </Button>
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
 
             <div>
               <Button
