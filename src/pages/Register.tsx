@@ -153,22 +153,23 @@ const Register: React.FC = () => {
 
             <div>
               <label htmlFor="assessmentCode" className="block text-sm font-medium text-gray-700">
-                Assessment Code <span className="text-gray-500">(optional)</span>
+               Assessment Code
               </label>
               <div className="mt-1">
                 <input
                   id="assessmentCode"
                   name="assessmentCode"
                   type="text"
+                 required
                   value={assessmentCode}
                   onChange={(e) => setAssessmentCode(e.target.value.toUpperCase())}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Enter your coach's assessment code"
+                 placeholder="Required: Enter your coach's assessment code"
                   maxLength={6}
                 />
               </div>
               <p className="mt-1 text-xs text-gray-500">
-                If you have a coach's assessment code, enter it here to be automatically assigned to them.
+               You must have a valid assessment code from your coach to create an account.
               </p>
             </div>
 
