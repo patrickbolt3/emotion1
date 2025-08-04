@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data: coaches, error: coachError } = await supabase
         .from('profiles')
         .select('id, assessment_code, role, first_name, last_name')
-        .eq('assessment_code', metadata.assessmentCode)
+        .ilike('assessment_code', metadata.assessmentCode)
         .eq('role', 'coach')
         .maybeSingle();
       
