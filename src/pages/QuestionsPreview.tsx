@@ -92,11 +92,7 @@ const QuestionsPreview: React.FC = () => {
   useEffect(() => {
     // Load saved rating if available
     const savedRating = answers[currentQuestion.id];
-    if (savedRating) {
-      setCurrentRating(savedRating);
-    } else {
-      setCurrentRating(0); // Reset rating for new question
-    }
+    setCurrentRating(savedRating || 0);
   }, [currentQuestionIndex]);
   
   const handleNext = () => {
