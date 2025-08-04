@@ -253,7 +253,7 @@ const RespondentDashboard: React.FC = () => {
         
         <MetricCard
           title="Avg. Time"
-          value={`${analytics.avg_completion_time}min`}
+          value={analytics.completed_assessments > 0 ? `${analytics.avg_completion_time}min` : '-'}
           change={{ value: 5, type: 'decrease', period: 'last assessment' }}
           icon={Clock}
           color="#F59E0B"
