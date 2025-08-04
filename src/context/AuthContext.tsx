@@ -6,7 +6,7 @@ type AuthContextType = {
   session: Session | null;
   user: User | null;
   loading: boolean;
-  signUp: (email: string, password: string, metadata?: { role: string, firstName?: string, lastName?: string }) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, metadata?: { role: string, firstName?: string, lastName?: string, assessmentCode?: string }) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 };
@@ -68,8 +68,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, [loading]);
 
-  const signUp = async (email: string, password: string, metadata?: { role: string, firstName?: string, lastName?: string }) => {
+  const signUp = async (email: string, password: string, metadata?: { role: string, firstName?: string, lastName?: string, assessmentCode?: string }) => {
     console.log("Signing up with metadata:", metadata);
+    
+    let coachId = null;
+    
+    // If assessment code is provided, validate it and find the coach
+    if (metadata?.assessmentCode) {
+      console.log("Validating assessment code:", metadata.assessmentCode);
+      
+      const { data: coach, error: coachError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('assessment_code', metadata.assessmentCode)
+        .eq('role', 'coach')
+        .maybeSingle();
+      
+      if (coachError) {
+        console.error("Error validating assessment code:", coachError);
+        return { error: new Error("Failed to validate assessment code. Please try again.") };
+      }
+      
+      if (!coach) {
+        return { error: new Error("Invalid assessment code. Please check with your coach and try again.") };
+      }
+      
+      coachId = coach.id;
+      console.log("Found coach for assessment code:", coachId);
+    }
     
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
@@ -77,9 +103,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       options: {
         data: {
           role: metadata?.role || 'respondent',
-          id: data.user.id,
           first_name: metadata?.firstName || '',
           last_name: metadata?.lastName || '',
+          coach_id: coachId,
         },
       },
     });
