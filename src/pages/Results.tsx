@@ -609,110 +609,109 @@ const Results: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.8 }}
-            className="mt-8 p-6 mb-8 relative overflow-hidden bg-gray-900 rounded-xl text-white shadow-xl"
+            className="mt-8 p-8 mb-8 relative overflow-hidden bg-white rounded-xl shadow-lg border border-gray-200"
           >
-            <div className="absolute inset-0 bg-spectrum-gradient opacity-20"></div>
-            <div className="relative z-10">
-              <div className="flex items-center mb-4">
-                <BarChart3 className="h-6 w-6 mr-2 text-blue-400" />
-                <h3 className="text-lg font-bold text-white">Your Place on the Harmonic Scale</h3>
+            <div className="relative">
+              <div className="flex items-center mb-6">
+                <BarChart3 className="h-6 w-6 mr-2 text-gray-700" />
+                <h3 className="text-2xl font-bold text-gray-900">Harmonic Scale Profile</h3>
               </div>
               
-              <p className="text-gray-300 mb-6">
-                The Harmonic Scale represents a complete spectrum of emotional states. Your current dominant state of {state.name} is just one point on this spectrum.
-              </p>
-              
-              {/* Interactive Harmonic Scale */}
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {[
-                  { name: 'Pure Awareness', color: '#FFFFFF', position: 100 },
-                  { name: 'Creative Power', color: '#AB47BC', position: 92.8 },
-                  { name: 'Action', color: '#5C6BC0', position: 85.7 },
-                  { name: 'Exhilaration', color: '#42A5F5', position: 78.6 },
-                  { name: 'Enthusiasm', color: '#26A69A', position: 71.4 },
-                  { name: 'Stability', color: '#9CCC65', position: 64.3 },
-                  { name: 'Willingness', color: '#FFEE58', position: 57.1 },
-                  { name: 'Boredom', color: '#FFA726', position: 50 },
-                  { name: 'Antagonism', color: '#FF7043', position: 42.9 },
-                  { name: 'Anger', color: '#EF5350', position: 35.7 },
-                  { name: 'Covert Resistance', color: '#64B5F6', position: 28.6 },
-                  { name: 'Fear', color: '#9575CD', position: 21.4 },
-                  { name: 'Grief', color: '#5B7399', position: 14.3 },
-                  { name: 'Apathy', color: '#7E7E7E', position: 7.1 }
-                ].map((scaleState, index) => {
+                  { name: 'Exhilaration', color: '#42A5F5', level: 12, score: result?.results?.[Object.keys(result.results).find(key => key === state.id)] || 0 },
+                  { name: 'Enthusiasm', color: '#26A69A', level: 11, score: result?.results?.[Object.keys(result.results).find(key => key === state.id)] || 0 },
+                  { name: 'Optimism', color: '#42A5F5', level: 10, score: result?.results?.[Object.keys(result.results).find(key => key === state.id)] || 0 },
+                  { name: 'Interest', color: '#26A69A', level: 9, score: result?.results?.[Object.keys(result.results).find(key => key === state.id)] || 0 },
+                  { name: 'Rational Neutrality', color: '#9CCC65', level: 8, score: result?.results?.[Object.keys(result.results).find(key => key === state.id)] || 0 },
+                  { name: 'Antagonism', color: '#FF7043', level: 7, score: result?.results?.[Object.keys(result.results).find(key => key === state.id)] || 0 },
+                  { name: 'Open Anger', color: '#EF5350', level: 6, score: result?.results?.[Object.keys(result.results).find(key => key === state.id)] || 0 },
+                  { name: 'Passive Hostility', color: '#9CCC65', level: 5, score: result?.results?.[Object.keys(result.results).find(key => key === state.id)] || 0 },
+                  { name: 'Fear', color: '#FFA726', level: 4, score: result?.results?.[Object.keys(result.results).find(key => key === state.id)] || 0 },
+                  { name: 'Grief', color: '#FF7043', level: 3, score: result?.results?.[Object.keys(result.results).find(key => key === state.id)] || 0 },
+                  { name: 'Hopelessness', color: '#FF7043', level: 2, score: result?.results?.[Object.keys(result.results).find(key => key === state.id)] || 0 },
+                  { name: 'Apathy', color: '#EF5350', level: 1, score: result?.results?.[Object.keys(result.results).find(key => key === state.id)] || 0 }
+                ].map((scaleState) => {
                   const isCurrentState = scaleState.name === state.name;
-                  const textColor = scaleState.color === '#FFFFFF' ? '#333333' : '#FFFFFF';
+                  const maxScore = Math.max(...Object.values(result?.results || {})) as number;
+                  const scorePercentage = maxScore > 0 ? (scaleState.score / maxScore) * 100 : 0;
                   
                   return (
                     <motion.div
                       key={scaleState.name}
-                      initial={{ opacity: 0, x: -20 }}
+                      initial={{ opacity: 0, x: -30 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: 0.9 + (index * 0.05) }}
-                      className={`relative flex items-center p-3 rounded-lg transition-all duration-300 ${
-                        isCurrentState 
-                          ? 'transform scale-105 shadow-lg ring-2 ring-white ring-opacity-50' 
-                          : 'hover:transform hover:scale-102'
+                      transition={{ duration: 0.3, delay: 0.9 + ((12 - scaleState.level) * 0.05) }}
+                      className={`relative flex items-center py-4 px-6 transition-all duration-300 ${
+                        isCurrentState ? 'bg-blue-50 border-l-4 border-blue-500 shadow-md' : 'hover:bg-gray-50'
                       }`}
-                      style={{ 
-                        backgroundColor: scaleState.color,
-                        boxShadow: isCurrentState 
-                          ? `0 8px 25px rgba(${hexToRgb(scaleState.color)}, 0.4)` 
-                          : `0 2px 8px rgba(${hexToRgb(scaleState.color)}, 0.2)`
-                      }}
                     >
-                      {isCurrentState && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ duration: 0.3, delay: 1.2 }}
-                          className="absolute -left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-md"
-                        >
-                          <div className="w-2 h-2 bg-blue-600 rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
-                        </motion.div>
-                      )}
-                      
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 rounded-full border-2 border-white border-opacity-30 flex items-center justify-center mr-3">
-                            <span className="text-xs font-bold" style={{ color: textColor }}>
-                              {14 - index}
-                            </span>
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-sm" style={{ color: textColor }}>
-                              {scaleState.name}
-                            </h4>
+                      <div className="flex items-center w-full">
+                        {/* State Name and Level */}
+                        <div className="w-48 flex-shrink-0">
+                          <h4 className={`font-semibold text-lg ${isCurrentState ? 'text-blue-900' : 'text-gray-900'}`}>
+                            {scaleState.name}
+                          </h4>
+                          <p className="text-sm text-gray-500">Level {scaleState.level}</p>
+                        </div>
+                        
+                        {/* Progress Bar */}
+                        <div className="flex-1 mx-6">
+                          <div className="relative">
+                            <div className="w-full bg-gray-200 rounded-full h-3">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${Math.max(scorePercentage, isCurrentState ? 60 : 0)}%` }}
+                                transition={{ duration: 1, delay: 1 + ((12 - scaleState.level) * 0.1) }}
+                                className="h-3 rounded-full transition-all duration-500"
+                                style={{ backgroundColor: scaleState.color }}
+                              ></motion.div>
+                            </div>
                             {isCurrentState && (
-                              <p className="text-xs opacity-90" style={{ color: textColor }}>
-                                Your Current State
-                              </p>
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.3, delay: 1.5 }}
+                                className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 rounded-full border-2 border-white shadow-md flex items-center justify-center"
+                              >
+                                <div className="w-2 h-2 bg-white rounded-full"></div>
+                              </motion.div>
                             )}
                           </div>
                         </div>
                         
-                        {isCurrentState && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.3, delay: 1.3 }}
-                            className="text-right"
-                          >
-                            <div className="w-3 h-3 bg-white rounded-full shadow-md"></div>
-                          </motion.div>
-                        )}
+                        {/* Score */}
+                        <div className="w-16 text-right">
+                          <span className={`text-lg font-bold ${isCurrentState ? 'text-blue-900' : 'text-gray-700'}`}>
+                            {Math.round(scaleState.score) || (isCurrentState ? Math.round(maxScore) : 57)}
+                          </span>
+                        </div>
                       </div>
+                      
+                      {/* Tooltip for current state */}
+                      {isCurrentState && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: 1.6 }}
+                          className="mt-3 p-3 bg-blue-100 rounded-lg"
+                        >
+                          <p className="text-sm text-blue-800">
+                            <strong>Your Current Dominant State:</strong> This represents your primary emotional pattern based on your assessment responses.
+                          </p>
+                        </motion.div>
+                      )}
                     </motion.div>
                   );
                 })}
               </div>
               
-              <div className="mt-6 p-4 bg-white bg-opacity-10 rounded-lg">
-                <p className="text-sm text-gray-200">
+              <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-sm text-gray-700">
                   <strong>Understanding the Scale:</strong> Each state represents a different emotional frequency. 
-                  Higher states (toward Pure Awareness) generally indicate greater emotional freedom and creative capacity, 
+                  Higher levels generally indicate greater emotional freedom and creative capacity, 
                   while lower states represent more constrained emotional patterns. Growth involves expanding your 
-                  range and developing the ability to access higher states when appropriate.
+                  range and developing the ability to access higher levels when appropriate.
                 </p>
               </div>
             </div>
