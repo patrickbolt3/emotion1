@@ -73,30 +73,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     let coachId = null;
     
-    // If assessment code is provided, validate it and find the coach
-    if (metadata?.assessmentCode?.trim()) {
+    // Assessment code is required, validate it and find the coach
+    if (!metadata?.assessmentCode?.trim()) {
+      console.log("No assessment code provided");
+      return { error: new Error("Assessment code is required. Please get a code from your coach.") };
+    }
+    
+    if (metadata.assessmentCode.trim()) {
       console.log("Validating assessment code:", metadata.assessmentCode);
       
       const { data: coaches, error: coachError } = await supabase
         .from('profiles')
-        .select('id, assessment_code, role')
+        .select('id, assessment_code, role, first_name, last_name')
         .eq('assessment_code', metadata.assessmentCode)
         .eq('role', 'coach')
-        .limit(1);
+        .single();
       
       if (coachError) {
         console.error("Error validating assessment code:", coachError);
+        if (coachError.code === 'PGRST116') {
+          return { error: new Error("Invalid assessment code. Please check with your coach and try again.") };
+        }
         return { error: new Error("Failed to validate assessment code. Please try again.") };
       }
       
-      if (!coaches || coaches.length === 0) {
+      if (!coaches) {
         console.log("No coach found with assessment code:", metadata.assessmentCode);
         return { error: new Error("Invalid assessment code. Please check with your coach and try again.") };
       }
       
-      const coach = coaches[0];
-      coachId = coach.id;
-      console.log("Found coach for assessment code:", coachId, "Coach data:", coach);
+      coachId = coaches.id;
+      console.log("Found coach for assessment code:", coachId, "Coach data:", coaches);
     }
     
     const { data, error: signUpError } = await supabase.auth.signUp({
