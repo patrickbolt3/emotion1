@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
-import { Brain } from 'lucide-react';
+import { Brain, ArrowLeft } from 'lucide-react';
 
 const Register: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -13,6 +13,10 @@ const Register: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Check if user came from another page (not direct navigation)
+  const showBackButton = location.key !== 'default';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,8 +50,25 @@ const Register: React.FC = () => {
     }
   };
 
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      {showBackButton && (
+        <div className="absolute top-4 left-4">
+          <Button variant="ghost" onClick={handleGoBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+        </div>
+      )}
+      
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
           <Brain className="h-12 w-12 text-blue-600" />
