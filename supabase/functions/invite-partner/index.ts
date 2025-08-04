@@ -110,7 +110,6 @@ Deno.serve(async (req) => {
       .update({
         first_name: firstName,
         last_name: lastName,
-        email: email,
         role: 'partner'
       })
       .eq('id', authData.user.id)
@@ -124,6 +123,7 @@ Deno.serve(async (req) => {
           id: authData.user.id,
           first_name: firstName,
           last_name: lastName,
+          email: email,
           role: 'partner'
         })
 
