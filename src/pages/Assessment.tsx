@@ -220,12 +220,13 @@ const Assessment: React.FC = () => {
   const currentQuestion = questions[currentQuestionIndex];
   
   // Additional safety check for currentQuestion
-  if (!loading && !currentQuestion) {
+  if (!loading && (!currentQuestion || currentQuestionIndex >= questions.length)) {
     return (
       <div className="flex flex-col justify-center items-center min-h-screen bg-gray-50 p-4">
         <Brain className="h-12 w-12 text-blue-600 mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900">Question Not Found</h2>
-        <p className="mt-2 text-gray-600">Unable to load the current question.</p>
+        <h2 className="text-2xl font-bold text-gray-900">Question Loading Error</h2>
+        <p className="mt-2 text-gray-600">Unable to load question {currentQuestionIndex + 1} of {questions.length}.</p>
+        <p className="mt-1 text-gray-500">Current index: {currentQuestionIndex}, Total questions: {questions.length}</p>
         <Button className="mt-6" onClick={() => navigate('/')}>
           Return to Home
         </Button>
