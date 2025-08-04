@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
-import { ArrowLeft, Briefcase, Users, Calendar, MoreVertical, Search, Filter, SortAsc, SortDesc } from 'lucide-react';
+import { ArrowLeft, Briefcase, Users, Calendar, MoreVertical, Search, Filter, SortAsc, SortDesc, Plus } from 'lucide-react';
 
 interface Coach {
   id: string;
@@ -14,9 +15,19 @@ interface Coach {
 }
 
 const AdminCoaches: React.FC = () => {
+  const { user } = useAuth();
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: ''
+  });
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   
   // Search and filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,54 +35,115 @@ const AdminCoaches: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
-    const fetchCoaches = async () => {
-      try {
-        // Get all coaches
-        const { data: coachData, error: coachError } = await supabase
-          .from('profiles')
-          .select(`
-            id,
-            first_name,
-            last_name,
-            email,
-            created_at
-          `)
-          .eq('role', 'coach')
-          .order('created_at', { ascending: false });
-
-        if (coachError) throw coachError;
-
-        // Get client counts for each coach and try to get email from user metadata
-        const coachesWithCounts = await Promise.all(
-          (coachData || []).map(async (coach) => {
-            // Get client count
-            const { count, error: countError } = await supabase
-              .from('profiles')
-              .select('id', { count: 'exact', head: true })
-              .eq('coach_id', coach.id);
-
-            if (countError) throw countError;
-
-            // Try to get email from current user if it's the same user, otherwise show placeholder
-
-            return {
-              ...coach,
-              client_count: count || 0
-            };
-          })
-        );
-
-        setCoaches(coachesWithCounts);
-      } catch (err: any) {
-        console.error('Error fetching coaches:', err);
-        setError(err.message || 'Failed to load coaches');
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    fetchUserRole();
     fetchCoaches();
   }, []);
+
+  const fetchUserRole = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) throw error;
+      setUserRole(data?.role || null);
+    } catch (err) {
+      console.error('Error fetching user role:', err);
+    }
+  };
+
+  const fetchCoaches = async () => {
+    try {
+      // Get all coaches
+      const { data: coachData, error: coachError } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          first_name,
+          last_name,
+          email,
+          created_at
+        `)
+        .eq('role', 'coach')
+        .order('created_at', { ascending: false });
+
+      if (coachError) throw coachError;
+
+      // Get client counts for each coach and try to get email from user metadata
+      const coachesWithCounts = await Promise.all(
+        (coachData || []).map(async (coach) => {
+          // Get client count
+          const { count, error: countError } = await supabase
+            .from('profiles')
+            .select('id', { count: 'exact', head: true })
+            .eq('coach_id', coach.id);
+
+          if (countError) throw countError;
+
+          // Try to get email from current user if it's the same user, otherwise show placeholder
+
+          return {
+            ...coach,
+            client_count: count || 0
+          };
+        })
+      );
+
+      setCoaches(coachesWithCounts);
+    } catch (err: any) {
+      console.error('Error fetching coaches:', err);
+      setError(err.message || 'Failed to load coaches');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddCoach = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/invite-coach`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          trainerId: user?.id
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to invite coach');
+      }
+
+      setMessage({ 
+        type: 'success', 
+        text: `Coach invited successfully! Email sent to ${formData.email}. Temporary password: ${result.tempPassword}` 
+      });
+      setFormData({ firstName: '', lastName: '', email: '' });
+      setShowAddForm(false);
+      await fetchCoaches();
+
+      setTimeout(() => setMessage(null), 5000);
+    } catch (err: any) {
+      console.error('Error inviting coach:', err);
+      setMessage({ type: 'error', text: err.message || 'Failed to invite coach' });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Filter and sort coaches
   const filteredAndSortedCoaches = React.useMemo(() => {
@@ -174,8 +246,100 @@ const AdminCoaches: React.FC = () => {
           <div className="text-sm text-gray-500">
             Showing: {filteredAndSortedCoaches.length} of {coaches.length} coaches
           </div>
+          {userRole === 'partner' && (
+            <Button onClick={() => setShowAddForm(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Coach
+            </Button>
+          )}
         </div>
       </div>
+
+      {message && (
+        <div className={`mb-6 p-4 rounded-md flex items-center ${
+          message.type === 'success' 
+            ? 'bg-green-50 border border-green-200 text-green-700' 
+            : 'bg-red-50 border border-red-200 text-red-700'
+        }`}>
+          {message.text}
+        </div>
+      )}
+
+      {/* Add Coach Form */}
+      {showAddForm && userRole === 'partner' && (
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6 border-l-4 border-blue-500">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Add New Coach</h3>
+          
+          <form onSubmit={handleAddCoach}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                  First Name *
+                </label>
+                <input
+                  id="firstName"
+                  type="text"
+                  required
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter first name"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                  Last Name *
+                </label>
+                <input
+                  id="lastName"
+                  type="text"
+                  required
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter last name"
+                />
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address *
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter email address"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setShowAddForm(false);
+                  setFormData({ firstName: '', lastName: '', email: '' });
+                  setMessage(null);
+                }}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? 'Sending Invitation...' : 'Send Invitation'}
+              </Button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Search and Filter Controls */}
       <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
