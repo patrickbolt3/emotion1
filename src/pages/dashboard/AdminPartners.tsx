@@ -8,6 +8,7 @@ interface Partner {
   id: string;
   first_name: string | null;
   last_name: string | null;
+  email: string;
   created_at: string;
   coach_count: number;
   trainer_count: number;

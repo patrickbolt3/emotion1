@@ -8,6 +8,7 @@ interface Respondent {
   id: string;
   first_name: string | null;
   last_name: string | null;
+  email: string;
   created_at: string;
   coach_id: string | null;
   coach_name?: string;
@@ -36,6 +37,7 @@ const AdminRespondents: React.FC = () => {
             id,
             first_name,
             last_name,
+            email,
             created_at,
             coach_id,
             coach:coach_id (
@@ -176,6 +178,9 @@ const AdminRespondents: React.FC = () => {
                     Respondent
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Coach
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -207,6 +212,9 @@ const AdminRespondents: React.FC = () => {
                           <div className="text-sm text-gray-500">ID: {respondent.id.slice(0, 8)}...</div>
                         </div>
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{respondent.email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {respondent.coach_name ? (

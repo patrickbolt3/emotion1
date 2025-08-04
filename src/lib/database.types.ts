@@ -51,6 +51,7 @@ export interface Database {
           updated_at: string
           first_name: string | null
           last_name: string | null
+          email: string
           role: string
           coach_id: string | null
           trainer_id: string | null
@@ -61,6 +62,7 @@ export interface Database {
           updated_at?: string
           first_name?: string | null
           last_name?: string | null
+          email: string
           role?: string
           coach_id?: string | null
           trainer_id?: string | null
@@ -71,6 +73,7 @@ export interface Database {
           updated_at?: string
           first_name?: string | null
           last_name?: string | null
+          email?: string
           role?: string
           coach_id?: string | null
           trainer_id?: string | null

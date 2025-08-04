@@ -8,6 +8,7 @@ interface Coach {
   id: string;
   first_name: string | null;
   last_name: string | null;
+  email: string;
   created_at: string;
   client_count: number;
 }
@@ -27,6 +28,7 @@ const AdminCoaches: React.FC = () => {
             id,
             first_name,
             last_name,
+            email,
             created_at
           `)
           .eq('role', 'coach')
@@ -132,6 +134,9 @@ const AdminCoaches: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Coach
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Email
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -160,6 +165,9 @@ const AdminCoaches: React.FC = () => {
                           <div className="text-sm text-gray-500">ID: {coach.id.slice(0, 8)}...</div>
                         </div>
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{coach.email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
