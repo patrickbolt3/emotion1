@@ -212,7 +212,8 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         message: 'Client invited successfully',
-        userId: authData.user.id 
+        userId: authData.user.id,
+        tempPassword: tempPassword
       }),
       { 
         status: 200, 

@@ -114,7 +114,10 @@ const AdminPartners: React.FC = () => {
       }
 
       // Success
-      setMessage({ type: 'success', text: 'Partner invited successfully! They will receive an email with login credentials.' });
+      setMessage({ 
+        type: 'success', 
+        text: `Partner invited successfully! Email sent to ${formData.email}. Temporary password: ${result.tempPassword}` 
+      });
       setFormData({ firstName: '', lastName: '', email: '' });
       setShowAddForm(false);
       await fetchPartners();

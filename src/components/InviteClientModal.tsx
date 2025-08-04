@@ -17,6 +17,7 @@ const InviteClientModal: React.FC<InviteClientModalProps> = ({ isOpen, onClose, 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [tempPassword, setTempPassword] = useState<string>('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +50,7 @@ const InviteClientModal: React.FC<InviteClientModalProps> = ({ isOpen, onClose, 
 
       // Success
       setSuccess(true);
+      setTempPassword(result.tempPassword || '');
       
       // Reset form
       setFirstName('');
@@ -73,6 +75,7 @@ const InviteClientModal: React.FC<InviteClientModalProps> = ({ isOpen, onClose, 
     setEmail('');
     setError(null);
     setSuccess(false);
+    setTempPassword('');
     onClose();
   };
 
@@ -100,11 +103,16 @@ const InviteClientModal: React.FC<InviteClientModalProps> = ({ isOpen, onClose, 
               <h3 className="text-lg font-medium text-gray-900 mb-2">
                 Invitation Sent!
               </h3>
-              <p className="text-gray-600 mb-4">
-                An invitation email has been sent to <strong>{email}</strong> with their login credentials.
+              <p className="text-gray-600 mb-2">
+                An invitation email has been sent to <strong>{email}</strong>.
               </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+                <p className="text-sm text-blue-800 font-medium mb-1">Temporary Login Credentials:</p>
+                <p className="text-sm text-blue-700">Email: {email}</p>
+                <p className="text-sm text-blue-700">Password: <span className="font-mono bg-blue-100 px-1 rounded">{tempPassword}</span></p>
+              </div>
               <p className="text-sm text-gray-500 mb-6">
-                They will receive an email with their temporary password and can log in to take the assessment.
+                The client can use these credentials to log in and take the assessment. They should change their password after first login.
               </p>
               <Button onClick={handleClose} className="w-full">
                 Done

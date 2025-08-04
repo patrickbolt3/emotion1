@@ -226,7 +226,8 @@ Deno.serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         message: 'Partner invited successfully',
-        userId: authData.user.id 
+        userId: authData.user.id,
+        tempPassword: tempPassword
       }),
       { 
         status: 200, 
