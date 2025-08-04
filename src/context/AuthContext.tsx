@@ -162,6 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               last_name: metadata?.lastName || '',
               email: email,
               role: metadata?.role || 'respondent',
+              coach_id: coachId,
             });
           
           if (!err) {
