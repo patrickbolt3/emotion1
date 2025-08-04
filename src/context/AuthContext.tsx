@@ -80,12 +80,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     
     if (metadata.assessmentCode.trim()) {
-      console.log("Validating assessment code:", metadata.assessmentCode);
+      const trimmedAssessmentCode = metadata.assessmentCode.trim();
+      console.log("Validating assessment code:", trimmedAssessmentCode);
       
       const { data: coaches, error: coachError } = await supabase
         .from('profiles')
         .select('id, assessment_code, role, first_name, last_name')
-        .ilike('assessment_code', metadata.assessmentCode)
+        .eq('assessment_code', trimmedAssessmentCode)
         .eq('role', 'coach')
         .maybeSingle();
       
