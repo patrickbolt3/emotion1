@@ -142,7 +142,12 @@ const Assessment: React.FC = () => {
           }
           
           if (state && state.color) {
-            setActiveColor(state.color);
+            // Don't use white color as it makes text invisible
+            if (state.color.toLowerCase() === '#ffffff' || state.color.toLowerCase() === 'white') {
+              setActiveColor('#E5E7EB'); // Use light gray instead of white
+            } else {
+              setActiveColor(state.color);
+            }
           } else {
             setActiveColor('#4F46E5'); // Default color if no color found
           }
