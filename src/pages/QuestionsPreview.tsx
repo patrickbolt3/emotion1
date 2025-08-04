@@ -283,12 +283,8 @@ const QuestionsPreview: React.FC = () => {
                   <Button
                     onClick={handleNext}
                     disabled={!currentRating}
-                    emotionColor={currentQuestion.color}
-                    variant="emotion"
+                    variant="default"
                     className="min-w-32"
-                    style={{ 
-                      boxShadow: `0 4px 14px 0 rgba(${hexToRgb(currentQuestion.color)}, 0.39)` 
-                    }}
                   >
                     {currentQuestionIndex < totalQuestions - 1 ? (
                       <>
