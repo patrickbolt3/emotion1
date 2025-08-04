@@ -15,7 +15,7 @@ import {
   CheckCircle,
   AlertCircle,
   Activity,
-  Zap
+  Zap,
   Copy,
   Check
 } from 'lucide-react';
