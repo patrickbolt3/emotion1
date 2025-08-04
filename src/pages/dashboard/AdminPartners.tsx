@@ -41,6 +41,7 @@ const AdminPartners: React.FC = () => {
           id,
           first_name,
           last_name,
+          email,
           created_at
         `)
         .eq('role', 'partner')
@@ -328,10 +329,10 @@ const AdminPartners: React.FC = () => {
                     Partner
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Coaches
+                    Email
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Trainers
+                    Coaches
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Joined
@@ -358,15 +359,12 @@ const AdminPartners: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <Users className="h-4 w-4 text-gray-400 mr-1" />
-                        <span className="text-sm text-gray-900">{partner.coach_count}</span>
-                      </div>
+                      <div className="text-sm text-gray-900">{partner.email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <Users className="h-4 w-4 text-gray-400 mr-1" />
-                        <span className="text-sm text-gray-900">{partner.trainer_count}</span>
+                        <span className="text-sm text-gray-900">{partner.coach_count}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
