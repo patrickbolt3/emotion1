@@ -55,6 +55,7 @@ export interface Database {
           role: string
           coach_id: string | null
           trainer_id: string | null
+          assessment_code: string | null
         }
         Insert: {
           id: string
@@ -66,6 +67,7 @@ export interface Database {
           role?: string
           coach_id?: string | null
           trainer_id?: string | null
+          assessment_code?: string | null
         }
         Update: {
           id?: string
@@ -77,6 +79,7 @@ export interface Database {
           role?: string
           coach_id?: string | null
           trainer_id?: string | null
+          assessment_code?: string | null
         }
         Relationships: [
           {
