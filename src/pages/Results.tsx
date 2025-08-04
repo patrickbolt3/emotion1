@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import { supabase } from '../lib/supabase';
 import { Button } from '../components/ui/Button';
-import { Brain, ChevronRight, Download, Share2, ArrowLeft } from 'lucide-react';
+import { Brain, ChevronRight, Download, Share2, ArrowLeft, BarChart3 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface AssessmentResult {
@@ -604,11 +604,125 @@ const Results: React.FC = () => {
             firstName={result.user.firstName}
           />
           
-          {/* Understanding your state */}
+          {/* Harmonic Scale Visualization */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.8 }}
+            className="mt-8 p-6 mb-8 relative overflow-hidden bg-gray-900 rounded-xl text-white shadow-xl"
+          >
+            <div className="absolute inset-0 bg-spectrum-gradient opacity-20"></div>
+            <div className="relative z-10">
+              <div className="flex items-center mb-4">
+                <BarChart3 className="h-6 w-6 mr-2 text-blue-400" />
+                <h3 className="text-lg font-bold text-white">Your Place on the Harmonic Scale</h3>
+              </div>
+              
+              <p className="text-gray-300 mb-6">
+                The Harmonic Scale represents a complete spectrum of emotional states. Your current dominant state of {state.name} is just one point on this spectrum.
+              </p>
+              
+              {/* Interactive Harmonic Scale */}
+              <div className="space-y-4">
+                {[
+                  { name: 'Pure Awareness', color: '#FFFFFF', position: 100 },
+                  { name: 'Creative Power', color: '#AB47BC', position: 92.8 },
+                  { name: 'Action', color: '#5C6BC0', position: 85.7 },
+                  { name: 'Exhilaration', color: '#42A5F5', position: 78.6 },
+                  { name: 'Enthusiasm', color: '#26A69A', position: 71.4 },
+                  { name: 'Stability', color: '#9CCC65', position: 64.3 },
+                  { name: 'Willingness', color: '#FFEE58', position: 57.1 },
+                  { name: 'Boredom', color: '#FFA726', position: 50 },
+                  { name: 'Antagonism', color: '#FF7043', position: 42.9 },
+                  { name: 'Anger', color: '#EF5350', position: 35.7 },
+                  { name: 'Covert Resistance', color: '#64B5F6', position: 28.6 },
+                  { name: 'Fear', color: '#9575CD', position: 21.4 },
+                  { name: 'Grief', color: '#5B7399', position: 14.3 },
+                  { name: 'Apathy', color: '#7E7E7E', position: 7.1 }
+                ].map((scaleState, index) => {
+                  const isCurrentState = scaleState.name === state.name;
+                  const textColor = scaleState.color === '#FFFFFF' ? '#333333' : '#FFFFFF';
+                  
+                  return (
+                    <motion.div
+                      key={scaleState.name}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 0.9 + (index * 0.05) }}
+                      className={`relative flex items-center p-3 rounded-lg transition-all duration-300 ${
+                        isCurrentState 
+                          ? 'transform scale-105 shadow-lg ring-2 ring-white ring-opacity-50' 
+                          : 'hover:transform hover:scale-102'
+                      }`}
+                      style={{ 
+                        backgroundColor: scaleState.color,
+                        boxShadow: isCurrentState 
+                          ? `0 8px 25px rgba(${hexToRgb(scaleState.color)}, 0.4)` 
+                          : `0 2px 8px rgba(${hexToRgb(scaleState.color)}, 0.2)`
+                      }}
+                    >
+                      {isCurrentState && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ duration: 0.3, delay: 1.2 }}
+                          className="absolute -left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-md"
+                        >
+                          <div className="w-2 h-2 bg-blue-600 rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
+                        </motion.div>
+                      )}
+                      
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 rounded-full border-2 border-white border-opacity-30 flex items-center justify-center mr-3">
+                            <span className="text-xs font-bold" style={{ color: textColor }}>
+                              {14 - index}
+                            </span>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-sm" style={{ color: textColor }}>
+                              {scaleState.name}
+                            </h4>
+                            {isCurrentState && (
+                              <p className="text-xs opacity-90" style={{ color: textColor }}>
+                                Your Current State
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {isCurrentState && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.3, delay: 1.3 }}
+                            className="text-right"
+                          >
+                            <div className="w-3 h-3 bg-white rounded-full shadow-md"></div>
+                          </motion.div>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+              
+              <div className="mt-6 p-4 bg-white bg-opacity-10 rounded-lg">
+                <p className="text-sm text-gray-200">
+                  <strong>Understanding the Scale:</strong> Each state represents a different emotional frequency. 
+                  Higher states (toward Pure Awareness) generally indicate greater emotional freedom and creative capacity, 
+                  while lower states represent more constrained emotional patterns. Growth involves expanding your 
+                  range and developing the ability to access higher states when appropriate.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+          
+          {/* Understanding your state */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.9 }}
             className="mt-8 bg-white rounded-xl shadow-md p-6 mb-8 relative overflow-hidden"
           >
             <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: state.color }}></div>
@@ -686,7 +800,7 @@ const Results: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.9 }}
+            transition={{ duration: 0.5, delay: 1.0 }}
             className="mt-12 rounded-xl p-8 text-center relative overflow-hidden"
             style={{ 
               background: `linear-gradient(135deg, ${state.color}15, ${state.color}30)`,
