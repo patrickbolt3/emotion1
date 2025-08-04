@@ -34,12 +34,6 @@ const AppRoutes: React.FC = () => {
     );
   }
   
-  // If user is logged in and tries to access public routes, redirect to dashboard
-  const shouldRedirectToDashboard = (path: string) => {
-    const publicRoutes = ['/', '/login', '/register', '/results-preview', '/questions-preview', '/emotional-states'];
-    return user && publicRoutes.includes(path);
-  };
-  
   return (
     <Routes>
       {/* Public routes with conditional redirect */}

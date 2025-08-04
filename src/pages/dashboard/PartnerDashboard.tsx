@@ -57,7 +57,7 @@ const PartnerDashboard: React.FC = () => {
       const { data: coachProfiles, error: coachesError } = await supabase
         .from('profiles')
         .select('id, first_name, last_name, email, created_at')
-        .eq('coach_id', user.id)
+        .eq('trainer_id', user.id)
         .eq('role', 'coach')
         .order('first_name', { ascending: true });
       
