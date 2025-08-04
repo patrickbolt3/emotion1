@@ -33,7 +33,7 @@ const CoachDashboard: React.FC = () => {
       // Get clients for this coach
       const { data: clientProfiles, error: clientsError } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name')
+        .select('id, first_name, last_name, email')
         .eq('coach_id', user.id)
         .order('first_name', { ascending: true });
       
@@ -208,7 +208,7 @@ const CoachDashboard: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">Email not available</div>
+                    <div className="text-sm text-gray-900">{client.email || 'No email'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {client.latest_assessment ? (
