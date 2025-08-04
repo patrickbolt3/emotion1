@@ -119,7 +119,7 @@ const DashboardNav: React.FC = () => {
                 </>
               )}
               
-              {(userRole === 'coach' || userRole === 'trainer' || userRole === 'admin') && (
+              {(userRole === 'coach' || userRole === 'trainer' || userRole === 'admin' || userRole === 'partner') && (
                 <>
                   <Link 
                     to="/dashboard" 
@@ -131,16 +131,16 @@ const DashboardNav: React.FC = () => {
                   >
                     Dashboard
                   </Link>
-                  {userRole === 'admin' && (
+                  {(userRole === 'admin' || userRole === 'partner') && (
                     <Link 
-                      to="/dashboard/users/partners" 
+                      to={userRole === 'admin' ? "/dashboard/users/partners" : "/dashboard/users/coaches"}
                       className={`px-3 py-2 text-sm font-medium rounded-md ${
-                        location.pathname === '/dashboard/users/partners' 
+                        (location.pathname === '/dashboard/users/partners' || location.pathname === '/dashboard/users/coaches')
                           ? 'bg-blue-50 text-blue-700' 
                           : 'text-gray-600 hover:text-gray-900'
                       }`}
                     >
-                      Partners
+                      {userRole === 'admin' ? 'Partners' : 'Coaches'}
                     </Link>
                   )}
                   <Link 
@@ -156,7 +156,7 @@ const DashboardNav: React.FC = () => {
                 </>
               )}
               
-              {(userRole === 'trainer' || userRole === 'admin') && (
+              {userRole === 'admin' && (
                 <Link 
                   to="/dashboard/users/coaches" 
                   className={`px-3 py-2 text-sm font-medium rounded-md ${
@@ -306,14 +306,18 @@ const Dashboard: React.FC = () => {
           <Route path="/" element={getDashboardComponent()} />
           <Route path="/new-assessment" element={<NewAssessment />} />
           <Route path="/profile" element={<Profile />} />
+          {/* Admin routes */}
           <Route path="/users/coaches" element={<AdminCoaches />} />
           <Route path="/users/respondents" element={<AdminRespondents />} />
           <Route path="/users/partners" element={<AdminPartners />} />
           <Route path="/settings" element={<AdminSettings />} />
           <Route path="/settings/questions" element={<QuestionsManagement />} />
+          {/* Detail routes */}
           <Route path="/respondent/:id" element={<RespondentDetails />} />
           <Route path="/coach/:id" element={<CoachDetails />} />
           <Route path="/partner/:id" element={<PartnerDetails />} />
+          {/* Catch all for unknown routes */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       
