@@ -77,24 +77,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    if (metadata?.assessmentCode?.trim()) {
       console.log("Validating assessment code:", metadata.assessmentCode);
       
-      const { data: coach, error: coachError } = await supabase
+      const { data: coaches, error: coachError } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, assessment_code, role')
         .eq('assessment_code', metadata.assessmentCode)
         .eq('role', 'coach')
-        .maybeSingle();
+        .limit(1);
       
       if (coachError) {
         console.error("Error validating assessment code:", coachError);
         return { error: new Error("Failed to validate assessment code. Please try again.") };
       }
       
-      if (!coach) {
+      if (!coaches || coaches.length === 0) {
+        console.log("No coach found with assessment code:", metadata.assessmentCode);
         return { error: new Error("Invalid assessment code. Please check with your coach and try again.") };
       }
       
+      const coach = coaches[0];
       coachId = coach.id;
-      console.log("Found coach for assessment code:", coachId);
+      console.log("Found coach for assessment code:", coachId, "Coach data:", coach);
    } else {
      return { error: new Error("Assessment code is required. Please get a valid code from your coach.") };
     }
