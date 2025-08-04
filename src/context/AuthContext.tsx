@@ -82,8 +82,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (metadata.assessmentCode.trim()) {
       const trimmedAssessmentCode = metadata.assessmentCode.trim();
       console.log("Validating assessment code:", trimmedAssessmentCode);
+      console.log("Validating assessment code:", trimmedAssessmentCode);
       
-      const { data: coaches, error: coachError } = await supabase
+      const { data: coach, error: coachError } = await supabase
         .from('profiles')
         .select('id, assessment_code, role, first_name, last_name')
         .eq('assessment_code', trimmedAssessmentCode)
@@ -95,13 +96,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: new Error("Failed to validate assessment code. Please try again.") };
       }
       
-      if (!coaches) {
-        console.log("No coach found with assessment code:", metadata.assessmentCode);
+      if (!coach) {
+        console.log("No coach found with assessment code:", trimmedAssessmentCode);
         return { error: new Error("Invalid assessment code. Please check with your coach and try again.") };
       }
       
-      coachId = coaches.id;
-      console.log("Found coach for assessment code:", coachId, "Coach data:", coaches);
+      coachId = coach.id;
+      console.log("Found coach for assessment code:", coachId, "Coach data:", coach);
     }
     
     const { data, error: signUpError } = await supabase.auth.signUp({
