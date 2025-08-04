@@ -213,7 +213,10 @@ const PartnerDashboard: React.FC = () => {
     });
   };
   
+  console.log('PartnerDashboard component rendered');
+  
   if (loading) {
+    console.log('PartnerDashboard: Still loading data');
     return (
       <div className="animate-pulse">
         <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
@@ -227,6 +230,10 @@ const PartnerDashboard: React.FC = () => {
       </div>
     );
   }
+  
+  console.log('PartnerDashboard: Rendering main content');
+  console.log('Stats:', stats);
+  console.log('Coaches:', coaches);
   
   return (
     <div>

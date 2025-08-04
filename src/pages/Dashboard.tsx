@@ -41,6 +41,7 @@ const useUserRole = () => {
   React.useEffect(() => {
     const fetchUserRole = async () => {
       if (!user) {
+        console.log('No user found, setting loading to false');
         setLoading(false);
         return;
       }
@@ -53,8 +54,13 @@ const useUserRole = () => {
           .eq('id', user.id)
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Database error fetching role:', error);
+          throw error;
+        }
+        
         console.log('User role from database:', data?.role);
+        console.log('Full profile data:', data);
         setRole(data?.role || 'respondent');
       } catch (err) {
         console.error('Error fetching user role:', err);
@@ -64,6 +70,7 @@ const useUserRole = () => {
         }
         setRole('respondent'); // Default fallback
       } finally {
+        console.log('Setting loading to false');
         setLoading(false);
       }
     };
@@ -299,6 +306,11 @@ const Dashboard: React.FC = () => {
         return <RespondentDashboard />;
     }
   };
+  
+  // Add debug logging to see what's happening
+  console.log('Current user role:', userRole);
+  console.log('Role loading state:', roleLoading);
+  console.log('User object:', user);
   
   return (
     <div className="min-h-screen bg-gray-50 pb-16 md:pb-0">
