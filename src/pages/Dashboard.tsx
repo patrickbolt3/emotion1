@@ -130,6 +130,18 @@ const DashboardNav: React.FC = () => {
                   >
                     Dashboard
                   </Link>
+                  {userRole === 'admin' && (
+                    <Link 
+                      to="/dashboard/users/partners" 
+                      className={`px-3 py-2 text-sm font-medium rounded-md ${
+                        location.pathname === '/dashboard/users/partners' 
+                          ? 'bg-blue-50 text-blue-700' 
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      Partners
+                    </Link>
+                  )}
                   <Link 
                     to="/dashboard/users/respondents" 
                     className={`px-3 py-2 text-sm font-medium rounded-md ${
@@ -166,19 +178,6 @@ const DashboardNav: React.FC = () => {
                   }`}
                 >
                   Settings
-                </Link>
-              )}
-              
-              {userRole === 'admin' && (
-                <Link 
-                  to="/dashboard/users/partners" 
-                  className={`px-3 py-2 text-sm font-medium rounded-md ${
-                    location.pathname === '/dashboard/users/partners' 
-                      ? 'bg-blue-50 text-blue-700' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Partners
                 </Link>
               )}
             </nav>
