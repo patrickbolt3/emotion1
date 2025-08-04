@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let coachId = null;
     
     // If assessment code is provided, validate it and find the coach
-   if (metadata?.assessmentCode?.trim()) {
+    if (metadata?.assessmentCode?.trim()) {
       console.log("Validating assessment code:", metadata.assessmentCode);
       
       const { data: coaches, error: coachError } = await supabase
@@ -97,8 +97,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const coach = coaches[0];
       coachId = coach.id;
       console.log("Found coach for assessment code:", coachId, "Coach data:", coach);
-   } else {
-     return { error: new Error("Assessment code is required. Please get a valid code from your coach.") };
     }
     
     const { data, error: signUpError } = await supabase.auth.signUp({
