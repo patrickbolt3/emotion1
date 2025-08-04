@@ -11,7 +11,7 @@ interface Respondent {
   email: string;
   created_at: string;
   coach_id: string | null;
-  coach_name?: string;
+  coach_name?: string | null;
   assessment_count: number;
   completed_assessments: number;
   latest_assessment?: {
@@ -58,7 +58,7 @@ const AdminRespondents: React.FC = () => {
 
         // Get assessment data for each respondent
         const respondentsWithAssessments = await Promise.all(
-          (respondentData || []).map(async (respondent) => {
+          (respondentData || []).map(async (respondent: any) => {
             // Get all assessments for this respondent
             const { data: assessments, error: assessmentError } = await supabase
               .from('assessments')
@@ -68,7 +68,7 @@ const AdminRespondents: React.FC = () => {
 
             if (assessmentError) throw assessmentError;
 
-            const completedAssessments = assessments?.filter(a => a.completed) || [];
+            const completedAssessments = (assessments || []).filter((a: any) => a.completed) || [];
             const latestAssessment = assessments && assessments.length > 0 ? assessments[0] : undefined;
 
             return {
@@ -79,7 +79,7 @@ const AdminRespondents: React.FC = () => {
               coach_name: respondent.coach 
                 ? `${respondent.coach.first_name || ''} ${respondent.coach.last_name || ''}`.trim()
                 : null
-            };
+            } as Respondent;
           })
         );
 
@@ -293,6 +293,8 @@ const AdminRespondents: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {filteredAndSortedRespondents.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-8 text-center">
           <div className="mx-auto w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
             <User className="h-6 w-6 text-blue-600" />
@@ -304,7 +306,6 @@ const AdminRespondents: React.FC = () => {
             There are no respondents registered in the system yet.
           </p>
         </div>
-        )
       ) : (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
@@ -317,7 +318,7 @@ const AdminRespondents: React.FC = () => {
                     onClick={() => handleSort('name')}
                   >
                     <div className="flex items-center">
-                    Respondent
+                      Respondent
                       {sortBy === 'name' && (
                         sortOrder === 'asc' ? <SortAsc className="ml-1 h-3 w-3" /> : <SortDesc className="ml-1 h-3 w-3" />
                       )}
@@ -329,7 +330,7 @@ const AdminRespondents: React.FC = () => {
                     onClick={() => handleSort('email')}
                   >
                     <div className="flex items-center">
-                    Email
+                      Email
                       {sortBy === 'email' && (
                         sortOrder === 'asc' ? <SortAsc className="ml-1 h-3 w-3" /> : <SortDesc className="ml-1 h-3 w-3" />
                       )}
@@ -341,7 +342,7 @@ const AdminRespondents: React.FC = () => {
                     onClick={() => handleSort('coach')}
                   >
                     <div className="flex items-center">
-                    Coach
+                      Coach
                       {sortBy === 'coach' && (
                         sortOrder === 'asc' ? <SortAsc className="ml-1 h-3 w-3" /> : <SortDesc className="ml-1 h-3 w-3" />
                       )}
@@ -353,7 +354,7 @@ const AdminRespondents: React.FC = () => {
                     onClick={() => handleSort('assessment_count')}
                   >
                     <div className="flex items-center">
-                    Assessments
+                      Assessments
                       {sortBy === 'assessment_count' && (
                         sortOrder === 'asc' ? <SortAsc className="ml-1 h-3 w-3" /> : <SortDesc className="ml-1 h-3 w-3" />
                       )}
@@ -368,7 +369,7 @@ const AdminRespondents: React.FC = () => {
                     onClick={() => handleSort('created_at')}
                   >
                     <div className="flex items-center">
-                    Joined
+                      Joined
                       {sortBy === 'created_at' && (
                         sortOrder === 'asc' ? <SortAsc className="ml-1 h-3 w-3" /> : <SortDesc className="ml-1 h-3 w-3" />
                       )}
@@ -385,7 +386,8 @@ const AdminRespondents: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-medium">
-                          {respondent.first_name?.[0] || 'R'}{respondent.last_name?.[0] || ''}
+                          {respondent.first_name?.[0] || 'R'}
+                          {respondent.last_name?.[0] || ''}
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
