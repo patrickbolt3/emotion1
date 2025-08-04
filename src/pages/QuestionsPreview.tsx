@@ -97,7 +97,7 @@ const QuestionsPreview: React.FC = () => {
     } else {
       setCurrentRating(0); // Reset rating for new question
     }
-  }, [currentQuestion.id, answers]);
+  }, [currentQuestionIndex]);
   
   const handleNext = () => {
     if (!currentRating) return;
