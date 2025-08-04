@@ -56,6 +56,48 @@ Deno.serve(async (req) => {
       }
     })
 
+    // Generate a unique assessment code
+    const generateAssessmentCode = () => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+      let code = ''
+      for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length))
+      }
+      return code
+    }
+
+    // Ensure the assessment code is unique
+    const generateUniqueAssessmentCode = async () => {
+      let attempts = 0
+      const maxAttempts = 10
+      
+      while (attempts < maxAttempts) {
+        const code = generateAssessmentCode()
+        
+        // Check if this code already exists
+        const { data: existingCoach, error: checkError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('assessment_code', code)
+          .eq('role', 'coach')
+          .maybeSingle()
+        
+        if (checkError) {
+          console.error('Error checking assessment code uniqueness:', checkError)
+          attempts++
+          continue
+        }
+        
+        if (!existingCoach) {
+          return code // Code is unique
+        }
+        
+        attempts++
+      }
+      
+      throw new Error('Failed to generate unique assessment code')
+    }
+
     // Generate a secure temporary password
     const generatePassword = () => {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
@@ -67,6 +109,7 @@ Deno.serve(async (req) => {
     }
 
     const tempPassword = generatePassword()
+    const assessmentCode = await generateUniqueAssessmentCode()
 
     // Create the user account
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
@@ -123,6 +166,7 @@ Deno.serve(async (req) => {
     // Wait a moment for the trigger to create the profile
     await new Promise(resolve => setTimeout(resolve, 1000))
 
+    // Update the profile to set the coach role, trainer relationship, and assessment code
     // Update the profile to set the coach role and trainer relationship
     const { error: profileError } = await supabase
       .from('profiles')
@@ -131,7 +175,8 @@ Deno.serve(async (req) => {
         last_name: lastName,
         email: email,
         role: 'coach',
-        trainer_id: trainerId
+        trainer_id: trainerId,
+        assessment_code: assessmentCode
       })
       .eq('id', authData.user.id)
 
@@ -146,7 +191,8 @@ Deno.serve(async (req) => {
           last_name: lastName,
           email: email,
           role: 'coach',
-          trainer_id: trainerId
+          trainer_id: trainerId,
+          assessment_code: assessmentCode
         })
 
       if (insertError) {
@@ -231,7 +277,8 @@ Deno.serve(async (req) => {
         success: true, 
         message: 'Coach invited successfully',
         userId: authData.user.id,
-        tempPassword: tempPassword
+        tempPassword: tempPassword,
+        assessmentCode: assessmentCode
       }),
       { 
         status: 200, 
