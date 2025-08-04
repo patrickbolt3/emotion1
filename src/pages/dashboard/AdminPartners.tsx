@@ -22,8 +22,7 @@ const AdminPartners: React.FC = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    email: '',
-    password: ''
+    email: ''
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -116,7 +115,7 @@ const AdminPartners: React.FC = () => {
 
       // Success
       setMessage({ type: 'success', text: 'Partner invited successfully! They will receive an email with login credentials.' });
-      setFormData({ firstName: '', lastName: '', email: '', password: '' });
+      setFormData({ firstName: '', lastName: '', email: '' });
       setShowAddForm(false);
       await fetchPartners();
 
@@ -125,26 +124,6 @@ const AdminPartners: React.FC = () => {
     } catch (err: any) {
       console.error('Error inviting partner:', err);
       setMessage({ type: 'error', text: err.message || 'Failed to invite partner' });
-
-      // Try to create profile manually if update failed
-      const { error: insertError } = await supabase
-        .from('profiles')
-        .insert({
-          id: 'temp-id',
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          role: 'partner'
-        });
-
-      if (insertError) throw insertError;
-
-      setMessage({ type: 'success', text: 'Partner added successfully!' });
-      setFormData({ firstName: '', lastName: '', email: '', password: '' });
-      setShowAddForm(false);
-      await fetchPartners();
-
-      // Clear message after 3 seconds
-      setTimeout(() => setMessage(null), 3000);
     } finally {
       setSaving(false);
     }
@@ -249,7 +228,7 @@ const AdminPartners: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="mb-6">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                   Email Address *
@@ -264,22 +243,6 @@ const AdminPartners: React.FC = () => {
                   placeholder="Enter email address"
                 />
               </div>
-              
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Password *
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter password"
-                  minLength={6}
-                />
-              </div>
             </div>
 
             <div className="flex justify-end space-x-3">
@@ -288,7 +251,7 @@ const AdminPartners: React.FC = () => {
                 variant="outline" 
                 onClick={() => {
                   setShowAddForm(false);
-                  setFormData({ firstName: '', lastName: '', email: '', password: '' });
+                  setFormData({ firstName: '', lastName: '', email: '' });
                   setMessage(null);
                 }}
                 disabled={saving}
@@ -296,7 +259,7 @@ const AdminPartners: React.FC = () => {
                 Cancel
               </Button>
               <Button type="submit" disabled={saving}>
-                {saving ? 'Adding Partner...' : 'Add Partner'}
+                {saving ? 'Sending Invitation...' : 'Send Invitation'}
               </Button>
             </div>
           </form>
