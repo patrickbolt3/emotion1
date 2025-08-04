@@ -46,6 +46,7 @@ const useUserRole = () => {
       }
 
       try {
+        console.log('Fetching role for user:', user.id);
         const { data, error } = await supabase
           .from('profiles')
           .select('role')
@@ -53,6 +54,7 @@ const useUserRole = () => {
           .single();
 
         if (error) throw error;
+        console.log('User role from database:', data?.role);
         setRole(data?.role || 'respondent');
       } catch (err) {
         console.error('Error fetching user role:', err);
@@ -282,6 +284,7 @@ const Dashboard: React.FC = () => {
   
   // Render the appropriate dashboard based on user role
   const getDashboardComponent = () => {
+    console.log('Rendering dashboard for role:', userRole);
     switch (userRole) {
       case 'admin':
         return <AdminDashboard />;

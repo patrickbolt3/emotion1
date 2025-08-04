@@ -77,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       options: {
         data: {
           role: metadata?.role || 'respondent',
+          id: data.user.id,
           first_name: metadata?.firstName || '',
           last_name: metadata?.lastName || '',
         },
