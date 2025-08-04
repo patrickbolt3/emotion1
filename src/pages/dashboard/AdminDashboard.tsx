@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../../components/ui/Button';
-import { BarChart3, Settings, Users, Briefcase as BriefcaseBusiness, UserCog, FileText, Book, UserPlus } from 'lucide-react';
+import { BarChart3, Settings, Users, Briefcase as BriefcaseBusiness, UserCog, FileText, Book, UserPlus, Handshake } from 'lucide-react';
 
 interface DashboardStats {
   total_users: number;
@@ -13,6 +13,7 @@ interface DashboardStats {
     coach: number;
     trainer: number;
     admin: number;
+    partner: number;
   };
 }
 
@@ -53,7 +54,8 @@ const AdminDashboard: React.FC = () => {
           respondent: 0,
           coach: 0,
           trainer: 0,
-          admin: 0
+          admin: 0,
+          partner: 0
         };
         
         userStats?.forEach(user => {
@@ -179,7 +181,7 @@ const AdminDashboard: React.FC = () => {
       </div>
       
       {/* Stats Grid */}
-      <div className="grid gap-6 md:grid-cols-4 mb-10">
+      <div className="grid gap-6 md:grid-cols-5 mb-10">
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center">
             <div className="rounded-full p-3 bg-blue-100 mr-4">
@@ -224,6 +226,18 @@ const AdminDashboard: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-500">Coaches</p>
               <h3 className="text-2xl font-bold text-gray-900">{stats.user_roles.coach}</h3>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center">
+            <div className="rounded-full p-3 bg-indigo-100 mr-4">
+              <Handshake className="h-6 w-6 text-indigo-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Partners</p>
+              <h3 className="text-2xl font-bold text-gray-900">{stats.user_roles.partner}</h3>
             </div>
           </div>
         </div>
@@ -309,6 +323,19 @@ const AdminDashboard: React.FC = () => {
               <div>
                 <h4 className="text-base font-medium text-gray-900">Trainers</h4>
                 <p className="text-sm text-gray-500">{stats.user_roles.trainer} users</p>
+              </div>
+              <svg className="ml-auto h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+            
+            <Link to="/dashboard/users/partners" className="flex items-center p-3 rounded-lg hover:bg-gray-50">
+              <div className="rounded-full p-2 bg-purple-100 mr-3">
+                <Handshake className="h-5 w-5 text-purple-600" />
+              </div>
+              <div>
+                <h4 className="text-base font-medium text-gray-900">Partners</h4>
+                <p className="text-sm text-gray-500">{stats.user_roles.partner} users</p>
               </div>
               <svg className="ml-auto h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

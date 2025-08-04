@@ -24,8 +24,10 @@ import Profile from './dashboard/Profile';
 import AdminCoaches from './dashboard/AdminCoaches';
 import AdminRespondents from './dashboard/AdminRespondents';
 import AdminSettings from './dashboard/AdminSettings';
+import AdminPartners from './dashboard/AdminPartners';
 import RespondentDetails from './dashboard/RespondentDetails';
 import CoachDetails from './dashboard/CoachDetails';
+import PartnerDetails from './dashboard/PartnerDetails';
 import NotFound from './NotFound';
 import QuestionsManagement from './dashboard/QuestionsManagement';
 
@@ -166,6 +168,19 @@ const DashboardNav: React.FC = () => {
                   Settings
                 </Link>
               )}
+              
+              {userRole === 'admin' && (
+                <Link 
+                  to="/dashboard/users/partners" 
+                  className={`px-3 py-2 text-sm font-medium rounded-md ${
+                    location.pathname === '/dashboard/users/partners' 
+                      ? 'bg-blue-50 text-blue-700' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Partners
+                </Link>
+              )}
             </nav>
           </div>
           
@@ -291,10 +306,12 @@ const Dashboard: React.FC = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/users/coaches" element={<AdminCoaches />} />
           <Route path="/users/respondents" element={<AdminRespondents />} />
+          <Route path="/users/partners" element={<AdminPartners />} />
           <Route path="/settings" element={<AdminSettings />} />
           <Route path="/settings/questions" element={<QuestionsManagement />} />
           <Route path="/respondent/:id" element={<RespondentDetails />} />
           <Route path="/coach/:id" element={<CoachDetails />} />
+          <Route path="/partner/:id" element={<PartnerDetails />} />
         </Routes>
       </main>
       

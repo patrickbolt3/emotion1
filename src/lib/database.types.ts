@@ -197,7 +197,7 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
-      user_role: "respondent" | "coach" | "trainer" | "admin"
+      user_role: "respondent" | "coach" | "trainer" | "admin" | "partner"
     }
   }
 }
