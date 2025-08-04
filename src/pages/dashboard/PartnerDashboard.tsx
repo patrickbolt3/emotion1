@@ -289,7 +289,7 @@ const PartnerDashboard: React.FC = () => {
 
       setMessage({ 
         type: 'success', 
-        text: `Coach invited successfully! Email sent to ${formData.email}` 
+        text: `Coach invited successfully! Email sent to ${formData.email}. Temporary password: ${result.tempPassword}` 
       });
       setFormData({ firstName: '', lastName: '', email: '' });
       setShowAddForm(false);
@@ -338,8 +338,8 @@ const PartnerDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Network Analytics</h1>
-          <p className="text-gray-600 mt-1">Monitor your coaching network performance and growth</p>
+          <h1 className="text-3xl font-bold text-gray-900">Partner Dashboard</h1>
+          <p className="text-gray-600 mt-1">Manage your coaching network and track organizational growth</p>
         </div>
         <div className="flex space-x-3">
           <div className="flex bg-gray-100 rounded-lg p-1">
