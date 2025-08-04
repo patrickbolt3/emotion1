@@ -87,13 +87,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .select('id, assessment_code, role, first_name, last_name')
         .eq('assessment_code', metadata.assessmentCode)
         .eq('role', 'coach')
-        .single();
+        .maybeSingle();
       
       if (coachError) {
         console.error("Error validating assessment code:", coachError);
-        if (coachError.code === 'PGRST116') {
-          return { error: new Error("Invalid assessment code. Please check with your coach and try again.") };
-        }
         return { error: new Error("Failed to validate assessment code. Please try again.") };
       }
       
