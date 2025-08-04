@@ -133,6 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               id: data.user.id,
               first_name: metadata?.firstName || '',
               last_name: metadata?.lastName || '',
+              email: email,
               role: metadata?.role || 'respondent',
             });
           
