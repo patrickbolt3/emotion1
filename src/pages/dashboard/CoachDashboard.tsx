@@ -16,6 +16,8 @@ import {
   AlertCircle,
   Activity,
   Zap
+  Copy,
+  Check
 } from 'lucide-react';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import BarChart from '../../components/charts/BarChart';
@@ -52,6 +54,9 @@ interface CoachAnalytics {
 const CoachDashboard: React.FC = () => {
   const { user } = useAuth();
   const [clients, setClients] = useState<ClientProfile[]>([]);
+  const [assessmentCode, setAssessmentCode] = useState<string | null>(null);
+  const [showCopyToast, setShowCopyToast] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
   const [analytics, setAnalytics] = useState<CoachAnalytics>({
     total_clients: 0,
     total_assessments: 0,
@@ -65,6 +70,37 @@ const CoachDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
   
+  // Auto-hide toast after 3 seconds
+  useEffect(() => {
+    if (showCopyToast) {
+      const timer = setTimeout(() => {
+        setShowCopyToast(false);
+        setCopySuccess(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showCopyToast]);
+
+  const fetchCoachProfile = useCallback(async () => {
+    try {
+      if (!user) return;
+      
+      // Get coach's assessment code
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('assessment_code')
+        .eq('id', user.id)
+        .eq('role', 'coach')
+        .single();
+      
+      if (profileError) throw profileError;
+      
+      setAssessmentCode(profileData?.assessment_code || null);
+    } catch (err) {
+      console.error('Error fetching coach profile:', err);
+    }
+  }, [user]);
+
   const fetchClients = useCallback(async () => {
     try {
       if (!user) return;
@@ -200,14 +236,36 @@ const CoachDashboard: React.FC = () => {
     }
   };
   
+  const handleCopyCode = async () => {
+    if (!assessmentCode) return;
+    
+    try {
+      await navigator.clipboard.writeText(assessmentCode);
+      setCopySuccess(true);
+      setShowCopyToast(true);
+    } catch (err) {
+      console.error('Failed to copy code:', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = assessmentCode;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopySuccess(true);
+      setShowCopyToast(true);
+    }
+  };
+
   const handleInviteSuccess = () => {
     setShowInviteModal(false);
     fetchClients();
   };
   
   useEffect(() => {
+    fetchCoachProfile();
     fetchClients();
-  }, [fetchClients]);
+  }, [fetchCoachProfile, fetchClients]);
 
   const engagementTrendData = analytics.client_engagement.map(item => ({
     name: item.date,
@@ -240,6 +298,14 @@ const CoachDashboard: React.FC = () => {
   
   return (
     <div className="space-y-8">
+      {/* Toast Notification */}
+      {showCopyToast && (
+        <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2 animate-pulse">
+          <Check className="h-5 w-5" />
+          <span className="font-medium">Assessment code copied successfully!</span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -269,6 +335,47 @@ const CoachDashboard: React.FC = () => {
         </div>
       </div>
       
+      {/* Assessment Code Section */}
+      {assessmentCode && (
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">Your Assessment Code</h3>
+              <p className="text-blue-700 text-sm mb-4">
+                Share this code with clients so they can sign up and be automatically assigned to you.
+              </p>
+              <div className="flex items-center space-x-3">
+                <div className="bg-white border border-blue-300 rounded-lg px-4 py-3 font-mono text-xl font-bold text-blue-900 tracking-wider">
+                  {assessmentCode}
+                </div>
+                <Button
+                  onClick={handleCopyCode}
+                  variant="outline"
+                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                >
+                  {copySuccess ? (
+                    <>
+                      <Check className="h-4 w-4 mr-2" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy Code
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+            <div className="hidden md:block">
+              <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center">
+                <UserPlus className="h-12 w-12 text-blue-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Key Metrics */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
