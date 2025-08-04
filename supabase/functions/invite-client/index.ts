@@ -113,8 +113,7 @@ serve(async (req) => {
       .update({
         coach_id: coachId,
         first_name: firstName,
-        last_name: lastName,
-        email: email
+        last_name: lastName
       })
       .eq('id', authData.user.id)
 
@@ -127,6 +126,7 @@ serve(async (req) => {
           id: authData.user.id,
           first_name: firstName,
           last_name: lastName,
+          email: email,
           role: 'respondent',
           coach_id: coachId
         })
