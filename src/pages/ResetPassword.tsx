@@ -11,57 +11,69 @@ const ResetPassword: React.FC = () => {
   const [verifying, setVerifying] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [validToken, setValidToken] = useState(false);
+  const [validSession, setValidSession] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // Get token and type from URL params (from Supabase auth verification)
-  const token = searchParams.get('token');
-  const type = searchParams.get('type');
-  const redirectTo = searchParams.get('redirect_to');
-
   useEffect(() => {
-    const verifyToken = async () => {
+    const checkSession = async () => {
       setVerifying(true);
       
-      // Check if we have the required parameters
-      if (!token || type !== 'recovery') {
-        setError('Invalid or missing reset token. Please request a new password reset.');
-        setValidToken(false);
-        setVerifying(false);
-        return;
-      }
-
       try {
-        // Verify the token with Supabase
-        const { data, error } = await supabase.auth.verifyOtp({
-          token_hash: token,
-          type: 'recovery'
-        });
+        // Check if we have an active session (user clicked reset link)
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          setError('Unable to verify reset session. Please request a new password reset.');
+          setValidSession(false);
+          return;
+        }
 
-        if (error) {
-          console.error('Token verification error:', error);
-          setError('This password reset link is invalid or has expired. Please request a new one.');
-          setValidToken(false);
-        } else if (data.user) {
-          console.log('Token verified successfully for user:', data.user.email);
-          setValidToken(true);
+        if (session && session.user) {
+          console.log('Valid session found for password reset');
+          setValidSession(true);
           setError(null);
         } else {
-          setError('Invalid reset token. Please request a new password reset.');
-          setValidToken(false);
+          // No session - check if we have URL parameters for token verification
+          const token = searchParams.get('token');
+          const type = searchParams.get('type');
+          
+          if (token && type === 'recovery') {
+            // Try to verify the token
+            const { data, error } = await supabase.auth.verifyOtp({
+              token_hash: token,
+              type: 'recovery'
+            });
+
+            if (error) {
+              console.error('Token verification error:', error);
+              setError('This password reset link is invalid or has expired. Please request a new one.');
+              setValidSession(false);
+            } else if (data.user) {
+              console.log('Token verified successfully');
+              setValidSession(true);
+              setError(null);
+            } else {
+              setError('Invalid reset token. Please request a new password reset.');
+              setValidSession(false);
+            }
+          } else {
+            setError('Invalid or missing reset token. Please request a new password reset.');
+            setValidSession(false);
+          }
         }
       } catch (err: any) {
-        console.error('Unexpected error during token verification:', err);
+        console.error('Unexpected error during session check:', err);
         setError('An error occurred while verifying your reset link. Please try again.');
-        setValidToken(false);
+        setValidSession(false);
       } finally {
         setVerifying(false);
       }
     };
 
-    verifyToken();
-  }, [token, type]);
+    checkSession();
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,7 +117,11 @@ const ResetPassword: React.FC = () => {
     }
   };
 
-  // Show loading while verifying token
+  const handleRequestNewReset = () => {
+    navigate('/login');
+  };
+
+  // Show loading while verifying session/token
   if (verifying) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -127,8 +143,8 @@ const ResetPassword: React.FC = () => {
     );
   }
 
-  // Show error if token is invalid
-  if (!validToken) {
+  // Show error if session/token is invalid
+  if (!validSession) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -148,7 +164,7 @@ const ResetPassword: React.FC = () => {
                 </Button>
                 <Button 
                   variant="outline" 
-                  onClick={() => navigate('/login')} 
+                  onClick={handleRequestNewReset} 
                   className="w-full"
                 >
                   Request New Reset Link

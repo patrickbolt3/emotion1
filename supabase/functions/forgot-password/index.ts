@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
           type: 'recovery',
           email: email,
           options: {
-            redirectTo: `${Deno.env.get('SITE_URL') || 'https://emotionindicator.com'}/reset-password`
+            redirectTo: `https://emotionindicator.com/reset-password`
           }
         })
 
