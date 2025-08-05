@@ -5,6 +5,7 @@ import { useAssessmentStore } from '../store/assessmentStore';
 import { Button } from '../components/ui/Button';
 import { ArrowLeft, ArrowRight, Brain } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getHarmonicStateTextColor } from '../lib/utils';
 
 const LikertScale: React.FC<{
   value: number;
@@ -23,9 +24,9 @@ const LikertScale: React.FC<{
             key={rating}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className={`flex-1 h-14 rounded-md border-2 transition-all duration-300 shadow-sm ${
+            className={`flex-1 h-14 rounded-md border-2 transition-all duration-300 shadow-sm font-medium ${
               value === rating
-                ? 'border-transparent text-white font-medium shadow-md'
+                ? `border-transparent shadow-md ${getHarmonicStateTextColor(activeColor)}`
                 : 'border-gray-200 hover:border-gray-300 text-gray-700'
             }`}
             style={value === rating ? { backgroundColor: activeColor } : {}}

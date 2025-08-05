@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import { supabase } from '../lib/supabase';
 import { Button } from '../components/ui/Button';
+import { getHarmonicStateTextColor } from '../lib/utils';
 import { Brain, ChevronRight, Download, Share2, ArrowLeft, BarChart3, User, Mail, Calendar, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
