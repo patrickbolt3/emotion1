@@ -1635,7 +1635,11 @@ const Results: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div 
-                              className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                              className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                                getHarmonicStateTextColor(question.state_color || '#6B7280')
+                              } ${
+                                question.state_color === '#FFFFFF' ? 'border-2 border-gray-300' : ''
+                              }`}
                               style={{ backgroundColor: score > 0 ? (question.state_color || '#6B7280') : '#D1D5DB' }}
                             >
                               {score || '-'}
@@ -1646,7 +1650,9 @@ const Results: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div 
-                              className="w-3 h-3 rounded-full mr-2"
+                              className={`w-3 h-3 rounded-full mr-2 ${
+                                question.state_color === '#FFFFFF' ? 'border border-gray-400' : ''
+                              }`}
                               style={{ backgroundColor: question.state_color || '#6B7280' }}
                             ></div>
                             <span className="text-sm text-gray-900">
