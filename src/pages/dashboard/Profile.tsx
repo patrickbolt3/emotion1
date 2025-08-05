@@ -184,54 +184,6 @@ const Profile: React.FC = () => {
               
               <div>
                 <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                  Last Name
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="lastName"
-                    name="lastName"
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    disabled
-                    value={profile.email}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 bg-gray-50 text-gray-500 sm:text-sm"
-                  />
-                </div>
-                <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
-              </div>
-              
-              <div>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-                  Role
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="role"
-                    name="role"
-                    type="text"
-                    disabled
-                    value={profile.role}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 bg-gray-50 text-gray-500 capitalize sm:text-sm"
-                  />
-                </div>
-                <p className="mt-1 text-xs text-gray-500">Role can only be changed by an administrator</p>
-              </div>
-              
               <div className="flex items-center justify-between pt-4">
                 <div className="flex items-center">
                   <User className="h-5 w-5 text-gray-400" />

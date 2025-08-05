@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Button } from '../components/ui/Button';
 import ChangePasswordModal from '../components/ChangePasswordModal';
+import ForcePasswordChangeModal from '../components/ForcePasswordChangeModal';
 import { 
   Brain, 
   BarChart3, 
@@ -37,6 +38,7 @@ import QuestionsManagement from './dashboard/QuestionsManagement';
 const useUserRole = () => {
   const { user } = useAuth();
   const [role, setRole] = React.useState<string | null>(null);
+  const [isPasswordUpdated, setIsPasswordUpdated] = React.useState<boolean>(true);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
@@ -52,7 +54,7 @@ const useUserRole = () => {
         console.log('User email:', user.email);
         const { data, error } = await supabase
           .from('profiles')
-          .select('role')
+          .select('role, is_password_updated')
           .eq('id', user.id)
           .single();
 
@@ -63,13 +65,16 @@ const useUserRole = () => {
         }
         
         console.log('User role from database:', data?.role);
+        console.log('Password updated status:', data?.is_password_updated);
         console.log('Full profile data:', data);
         
         if (!data) {
           console.error('No profile data returned for user:', user.id);
           setRole('respondent'); // Default fallback
+          setIsPasswordUpdated(true); // Default to true for safety
         } else {
           setRole(data.role || 'respondent');
+          setIsPasswordUpdated(data.is_password_updated ?? true);
         }
       } catch (err) {
         console.error('Error fetching user role:', err);
@@ -78,6 +83,7 @@ const useUserRole = () => {
           console.error('Supabase connection failed. Please check your environment variables.');
         }
         setRole('respondent'); // Default fallback
+        setIsPasswordUpdated(true); // Default to true for safety
       } finally {
         console.log('Setting loading to false');
         setLoading(false);
@@ -87,7 +93,7 @@ const useUserRole = () => {
     fetchUserRole();
   }, [user]);
 
-  return { role, loading };
+  return { role, isPasswordUpdated, loading, refetch: () => fetchUserRole() };
 };
 
 const DashboardNav: React.FC = () => {
@@ -296,7 +302,21 @@ const MobileDashboardNav: React.FC = () => {
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const { role: userRole, loading: roleLoading } = useUserRole();
+  const { role: userRole, isPasswordUpdated, loading: roleLoading, refetch } = useUserRole();
+  const [showForcePasswordChange, setShowForcePasswordChange] = useState(false);
+
+  // Check if user needs to change password
+  React.useEffect(() => {
+    if (!roleLoading && userRole && !isPasswordUpdated) {
+      setShowForcePasswordChange(true);
+    }
+  }, [roleLoading, userRole, isPasswordUpdated]);
+
+  const handlePasswordChanged = async () => {
+    setShowForcePasswordChange(false);
+    // Refetch user data to get updated password status
+    await refetch();
+  };
   
   // Show loading while fetching role
   if (roleLoading) {
@@ -364,6 +384,12 @@ const Dashboard: React.FC = () => {
       </main>
       
       <MobileDashboardNav />
+      
+      <ForcePasswordChangeModal
+        isOpen={showForcePasswordChange}
+        userEmail={user?.email || ''}
+        onPasswordChanged={handlePasswordChanged}
+      />
     </div>
   );
 };

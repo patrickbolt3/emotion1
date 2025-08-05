@@ -50,6 +50,16 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
 
       setSuccess(true);
       
+      // Update password status in profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ is_password_updated: true })
+        .eq('id', (await supabase.auth.getUser()).data.user?.id);
+
+      if (profileError) {
+        console.error('Error updating profile password status:', profileError);
+      }
+      
       // Clear form and close modal after success
       setTimeout(() => {
         handleClose();

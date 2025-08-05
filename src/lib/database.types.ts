@@ -56,6 +56,7 @@ export interface Database {
           coach_id: string | null
           trainer_id: string | null
           assessment_code: string | null
+          is_password_updated: boolean
         }
         Insert: {
           id: string
@@ -68,6 +69,7 @@ export interface Database {
           coach_id?: string | null
           trainer_id?: string | null
           assessment_code?: string | null
+          is_password_updated?: boolean
         }
         Update: {
           id?: string
@@ -80,6 +82,7 @@ export interface Database {
           coach_id?: string | null
           trainer_id?: string | null
           assessment_code?: string | null
+          is_password_updated?: boolean
         }
         Relationships: [
           {

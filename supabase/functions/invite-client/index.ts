@@ -131,7 +131,8 @@ Deno.serve(async (req) => {
         first_name: firstName,
         last_name: lastName,
         email: email,
-        role: 'respondent'
+        role: 'respondent',
+        is_password_updated: false
       })
       .eq('id', authData.user.id)
 
@@ -146,7 +147,8 @@ Deno.serve(async (req) => {
           last_name: lastName,
           email: email,
           role: 'respondent',
-          coach_id: coachId
+          coach_id: coachId,
+          is_password_updated: false
         })
 
       if (insertError) {
