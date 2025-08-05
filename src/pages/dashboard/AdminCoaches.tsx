@@ -58,8 +58,8 @@ const AdminCoaches: React.FC = () => {
 
   const fetchCoaches = async () => {
     try {
-      // Get all coaches
-      const { data: coachData, error: coachError } = await supabase
+      // Get coaches based on user role
+      let query = supabase
         .from('profiles')
         .select(`
           id,
@@ -68,8 +68,14 @@ const AdminCoaches: React.FC = () => {
           email,
           created_at
         `)
-        .eq('role', 'coach')
-        .order('created_at', { ascending: false });
+        .eq('role', 'coach');
+
+      // If user is a partner, only show coaches they manage
+      if (userRole === 'partner') {
+        query = query.eq('trainer_id', user?.id);
+      }
+
+      const { data: coachData, error: coachError } = await query.order('created_at', { ascending: false });
 
       if (coachError) throw coachError;
 

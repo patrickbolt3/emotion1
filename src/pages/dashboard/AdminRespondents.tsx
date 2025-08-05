@@ -23,6 +23,8 @@ interface Respondent {
 }
 
 const AdminRespondents: React.FC = () => {
+  const { user } = useAuth();
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [respondents, setRespondents] = useState<Respondent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,10 +36,11 @@ const AdminRespondents: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
+    fetchUserRole();
     const fetchRespondents = async () => {
       try {
-        // Get all respondents with their coach info
-        const { data: respondentData, error: respondentError } = await supabase
+        // Get respondents based on user role - for partners, only show clients of their coaches
+        let query = supabase
           .from('profiles')
           .select(`
             id,
@@ -51,8 +54,32 @@ const AdminRespondents: React.FC = () => {
               last_name
             )
           `)
-          .eq('role', 'respondent')
-          .order('created_at', { ascending: false });
+          .eq('role', 'respondent');
+
+        // If user is a partner, only show clients of coaches they manage
+        if (userRole === 'partner') {
+          // First get the coach IDs managed by this partner
+          const { data: partnerCoaches, error: coachError } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('trainer_id', user?.id)
+            .eq('role', 'coach');
+
+          if (coachError) throw coachError;
+
+          const coachIds = partnerCoaches?.map(c => c.id) || [];
+          
+          if (coachIds.length === 0) {
+            // No coaches, so no clients to show
+            setRespondents([]);
+            return;
+          }
+
+          query = query.in('coach_id', coachIds);
+        }
+
+        const { data: respondentData, error: respondentError } = await supabase
+          query.order('created_at', { ascending: false });
 
         if (respondentError) throw respondentError;
 
@@ -94,6 +121,23 @@ const AdminRespondents: React.FC = () => {
 
     fetchRespondents();
   }, []);
+
+  const fetchUserRole = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) throw error;
+      setUserRole(data?.role || null);
+    } catch (err) {
+      console.error('Error fetching user role:', err);
+    }
+  };
 
   // Filter and sort respondents
   const filteredAndSortedRespondents = React.useMemo(() => {
