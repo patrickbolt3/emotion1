@@ -74,7 +74,7 @@ const AdminCoaches: React.FC = () => {
           email,
           created_at
         `)
-        .eq('role', 'coach');
+        .eq('role', 'coach')
         .order('created_at', { ascending: false });
 
       if (coachError) throw coachError;
