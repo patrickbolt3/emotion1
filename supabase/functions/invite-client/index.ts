@@ -156,7 +156,7 @@ serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'EDI Assessment <noreply@yourdomain.com>',
+            from: 'EDI Assessment <onboarding@resend.dev>',
             to: [email],
             subject: 'Invitation to Complete Your Emotional Dynamics Assessment',
             html: `
@@ -182,7 +182,7 @@ serve(async (req) => {
                 </ol>
                 
                 <div style="margin: 30px 0;">
-                  <a href="${supabaseUrl.replace('supabase.co', 'vercel.app')}/login" 
+                  <a href="https://emotionindicator.com/login" 
                      style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
                     Start Assessment
                   </a>

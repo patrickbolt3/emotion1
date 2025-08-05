@@ -128,6 +128,7 @@ Deno.serve(async (req) => {
       .update({
         first_name: firstName,
         last_name: lastName,
+        email: email,
         role: 'partner'
       })
       .eq('id', authData.user.id)
@@ -169,7 +170,7 @@ Deno.serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'EDI Assessment <noreply@yourdomain.com>',
+            from: 'EDI Assessment <onboarding@resend.dev>',
             to: [email],
             subject: 'Welcome to EDI™ - Partner Account Created',
             html: `
@@ -195,7 +196,7 @@ Deno.serve(async (req) => {
                 </ul>
                 
                 <div style="margin: 30px 0;">
-                  <a href="${supabaseUrl.replace('supabase.co', 'vercel.app')}/login" 
+                  <a href="https://emotionindicator.com/login" 
                      style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
                     Access Partner Portal
                   </a>
@@ -214,7 +215,9 @@ Deno.serve(async (req) => {
         })
 
         if (!emailResponse.ok) {
-          console.error('Failed to send email:', await emailResponse.text())
+          const errorText = await emailResponse.text()
+          console.error('Failed to send email:', errorText)
+          console.error('Email response status:', emailResponse.status)
         }
       } catch (emailError) {
         console.error('Email sending error:', emailError)
