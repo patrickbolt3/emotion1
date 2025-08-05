@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../../components/ui/Button';
-import { Check, User, X, Lock, Eye, EyeOff } from 'lucide-react';
-import { Loader2 } from 'lucide-react';
+import { Check, User, X, Mail, Shield, Info } from 'lucide-react';
 
 interface Profile {
   id: string;
@@ -22,18 +21,11 @@ const Profile: React.FC = () => {
   const [updating, setUpdating] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  // Password change state
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [passwordUpdating, setPasswordUpdating] = useState(false);
-  const [passwordSuccess, setPasswordSuccess] = useState(false);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  // Password reset state
+  const [sendingPasswordReset, setSendingPasswordReset] = useState(false);
+  const [passwordResetSent, setPasswordResetSent] = useState(false);
+  const [passwordResetError, setPasswordResetError] = useState<string | null>(null);
   
   useEffect(() => {
     const fetchProfile = async () => {
@@ -112,67 +104,43 @@ const Profile: React.FC = () => {
       setUpdating(false);
     }
   };
-  
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setPasswordUpdating(true);
-    setPasswordSuccess(false);
-    setPasswordError(null);
-    
-    // Validation
-    if (newPassword.length < 6) {
-      setPasswordError('New password must be at least 6 characters long');
-      setPasswordUpdating(false);
-      return;
-    }
-    
-    if (newPassword !== confirmPassword) {
-      setPasswordError('New passwords do not match');
-      setPasswordUpdating(false);
-      return;
-    }
-    
-    try {
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword,
-        // Include current password for verification if supported
-        ...(currentPassword && { currentPassword })
+
+  const handleSendPasswordReset = async () => {
+    if (!user?.email) return;
+
+    setSendingPasswordReset(true);
+    setPasswordResetSent(false);
+    setPasswordResetError(null);
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: user.email
+        })
       });
-    
-      if (updateError) {
-        // Handle specific error cases
-        if (updateError.message.includes('Invalid login credentials') || 
-            updateError.message.includes('current password')) {
-          throw new Error('Current password is incorrect');
-        }
-        throw updateError;
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send password reset email');
       }
-      
-      setPasswordSuccess(true);
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      setShowPasswordForm(false);
-      
-      // Hide success message after 3 seconds
+
+      setPasswordResetSent(true);
+
+      // Hide success message after 10 seconds
       setTimeout(() => {
-        setPasswordSuccess(false);
-      }, 3000);
-    } catch (err: any) {
-      console.error('Error updating password:', err);
-      setPasswordError(err.message || 'Failed to update password');
+        setPasswordResetSent(false);
+      }, 10000);
+    } catch (error: any) {
+      console.error('Error sending password reset:', error);
+      setPasswordResetError(error.message || 'Failed to send password reset email');
     } finally {
-      setPasswordUpdating(false);
+      setSendingPasswordReset(false);
     }
-  };
-  
-  const handleCancelPasswordChange = () => {
-    setShowPasswordForm(false);
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setPasswordError(null);
   };
   
   if (loading) {
@@ -238,18 +206,18 @@ const Profile: React.FC = () => {
               Profile updated successfully
             </div>
           )}
-          
-          {passwordSuccess && (
+
+          {passwordResetSent && (
             <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md flex items-center">
-              <Check className="h-5 w-5 mr-2" />
-              Password updated successfully
+              <Mail className="h-5 w-5 mr-2" />
+              Password reset email sent! Check your inbox for the reset link.
             </div>
           )}
-          
-          {passwordError && (
+
+          {passwordResetError && (
             <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md flex items-center">
               <X className="h-5 w-5 mr-2" />
-              {passwordError}
+              {passwordResetError}
             </div>
           )}
           
@@ -321,130 +289,52 @@ const Profile: React.FC = () => {
                 <p className="mt-1 text-xs text-gray-500">Role can only be changed by an administrator</p>
               </div>
               
-              {/* Password Change Section */}
+              {/* Password Reset Section */}
               <div className="border-t border-gray-200 pt-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="text-lg font-medium text-gray-900">Password</h3>
-                    <p className="text-sm text-gray-500">Update your account password</p>
+                    <p className="text-sm text-gray-500">Send a password reset email to change your password securely</p>
                   </div>
-                  {!showPasswordForm && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowPasswordForm(true)}
-                    >
-                      <Lock className="h-4 w-4 mr-2" />
-                      Change Password
-                    </Button>
-                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleSendPasswordReset}
+                    disabled={sendingPasswordReset || passwordResetSent}
+                  >
+                    {sendingPasswordReset ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Sending...
+                      </>
+                    ) : passwordResetSent ? (
+                      <>
+                        <Check className="h-4 w-4 mr-2" />
+                        Email Sent
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="h-4 w-4 mr-2" />
+                        Send Reset Email
+                      </>
+                    )}
+                  </Button>
                 </div>
                 
-                {showPasswordForm && (
-                  <form onSubmit={handlePasswordChange} className="space-y-4 bg-gray-50 p-4 rounded-lg">
-                    <div>
-                      <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                        Current Password
-                      </label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <input
-                          id="currentPassword"
-                          type={showCurrentPassword ? "text" : "password"}
-                          required
-                          value={currentPassword}
-                          onChange={(e) => setCurrentPassword(e.target.value)}
-                          className="pl-10 pr-10 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Enter current password"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        >
-                          {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <Info className="h-5 w-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium text-blue-800 mb-1">Secure Password Reset</h4>
+                      <p className="text-sm text-blue-700 mb-3">
+                        For security, we'll send a password reset link to your email address: <strong>{profile.email}</strong>
+                      </p>
+                      <p className="text-xs text-blue-600">
+                        You'll receive an email with a secure link to reset your password. This ensures only you can change your password.
+                      </p>
                     </div>
-                    
-                    <div>
-                      <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                        New Password
-                      </label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <input
-                          id="newPassword"
-                          type={showNewPassword ? "text" : "password"}
-                          required
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          className="pl-10 pr-10 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Enter new password"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowNewPassword(!showNewPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        >
-                          {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
-                      <p className="mt-1 text-xs text-gray-500">Password must be at least 6 characters long</p>
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                        Confirm New Password
-                      </label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <input
-                          id="confirmPassword"
-                          type={showConfirmPassword ? "text" : "password"}
-                          required
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          className="pl-10 pr-10 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Confirm new password"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        >
-                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex space-x-3 pt-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleCancelPasswordChange}
-                        disabled={passwordUpdating}
-                        className="flex-1"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={passwordUpdating}
-                        className="flex-1"
-                      >
-                       {passwordUpdating ? (
-                         <>
-                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                           Updating...
-                         </>
-                       ) : (
-                         'Update Password'
-                       )}
-                      </Button>
-                    </div>
-                  </form>
-                )}
+                  </div>
+                </div>
               </div>
               
               <div className="flex items-center justify-between pt-4">
