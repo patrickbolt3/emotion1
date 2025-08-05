@@ -97,12 +97,14 @@ const useUserRole = () => {
         console.error('No profile data returned for user:', user.id);
         // Check if this is the admin email
         if (user.email === 'adhiyadeep@outlook.com') {
+          console.log('Setting role to admin for admin email');
           setRole('admin');
         } else {
           setRole('respondent'); // Default fallback
         }
         setIsPasswordUpdated(true); // Default to true for safety
       } else {
+        console.log('Setting role from database data:', data.role);
         setRole(data.role || 'respondent');
         setIsPasswordUpdated(data.is_password_updated ?? true);
       }
@@ -114,6 +116,7 @@ const useUserRole = () => {
       }
       // Check if this is the admin email even on error
       if (user?.email === 'adhiyadeep@outlook.com') {
+        console.log('Setting role to admin for admin email (error fallback)');
         setRole('admin');
       } else {
         setRole('respondent'); // Default fallback
@@ -384,8 +387,10 @@ const Dashboard: React.FC = () => {
         console.log('Rendering CoachDashboard');
         return <CoachDashboard />;
       case 'respondent':
-      default:
         console.log('Rendering RespondentDashboard (default)');
+        return <RespondentDashboard />;
+      default:
+        console.log('Unknown role, rendering RespondentDashboard as fallback');
         return <RespondentDashboard />;
     }
   };
