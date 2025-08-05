@@ -131,11 +131,15 @@ const Profile: React.FC = () => {
       setPasswordError('New passwords do not match');
       setPasswordUpdating(false);
       return;
+    }
+    
+    try {
+      const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
         // Include current password for verification if supported
         ...(currentPassword && { currentPassword })
+      });
     
-    try {
       if (updateError) {
         // Handle specific error cases
         if (updateError.message.includes('Invalid login credentials') || 
