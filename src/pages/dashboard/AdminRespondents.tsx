@@ -48,19 +48,9 @@ const AdminRespondents: React.FC = () => {
     if (!user) return;
     
     try {
-      // First get the current user's role
-      const { data: currentUserProfile, error: roleError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (roleError) throw roleError;
-      
-      const currentUserRole = currentUserProfile?.role;
-      
-      // Get respondents based on user role - for partners, only show clients of their coaches
-      let query = supabase
+      // RLS policies will automatically filter based on user role
+      // No need for application-level filtering
+      const { data: respondentData, error: respondentError } = await supabase
         .from('profiles')
         .select(`
           id,
@@ -75,35 +65,7 @@ const AdminRespondents: React.FC = () => {
           )
         `)
         .eq('role', 'respondent');
-
-      // If user is a coach, only show their own clients
-      if (currentUserRole === 'coach') {
-        query = query.eq('coach_id', user.id);
-      }
-      // If user is a partner, only show clients of coaches they manage
-      else if (currentUserRole === 'partner') {
-        // First get the coach IDs managed by this partner
-        const { data: partnerCoaches, error: coachError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('trainer_id', user?.id)
-          .eq('role', 'coach');
-
-        if (coachError) throw coachError;
-
-        const coachIds = partnerCoaches?.map(c => c.id) || [];
-        
-        if (coachIds.length === 0) {
-          // No coaches, so no clients to show
-          setRespondents([]);
-          setLoading(false);
-          return;
-        }
-
-        query = query.in('coach_id', coachIds);
-      }
-
-      const { data: respondentData, error: respondentError } = await query.order('created_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (respondentError) throw respondentError;
 

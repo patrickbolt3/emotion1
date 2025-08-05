@@ -63,19 +63,9 @@ const AdminCoaches: React.FC = () => {
     if (!user) return;
     
     try {
-      // First get the current user's role
-      const { data: currentUserProfile, error: roleError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (roleError) throw roleError;
-      
-      const currentUserRole = currentUserProfile?.role;
-      
-      // Build query based on user role
-      let query = supabase
+      // RLS policies will automatically filter based on user role
+      // No need for application-level filtering
+      const { data: coachData, error: coachError } = await supabase
         .from('profiles')
         .select(`
           id,
@@ -85,13 +75,7 @@ const AdminCoaches: React.FC = () => {
           created_at
         `)
         .eq('role', 'coach');
-
-      // If current user is a partner, only show coaches they manage (where trainer_id = partner's id)
-      if (currentUserRole === 'partner') {
-        query = query.eq('trainer_id', user?.id);
-      }
-
-      const { data: coachData, error: coachError } = await query.order('created_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (coachError) throw coachError;
 
