@@ -64,7 +64,7 @@ const AdminRespondents: React.FC = () => {
             last_name
           )
         `)
-        .eq('role', 'respondent');
+        .eq('role', 'respondent')
         .order('created_at', { ascending: false });
 
       if (respondentError) throw respondentError;
