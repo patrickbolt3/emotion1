@@ -220,6 +220,7 @@ Deno.serve(async (req) => {
           },
           body: JSON.stringify({
             from: 'EDI Assessment <onboarding@resend.dev>',
+            from: 'EDI Assessment <noreply@send.emotionindicator.com>',
             to: [email],
             subject: 'Welcome to EDI™ - Coach Account Created',
             html: `
