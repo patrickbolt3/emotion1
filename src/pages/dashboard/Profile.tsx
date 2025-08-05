@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../../components/ui/Button';
-import { Check, User, X, Mail, Shield, Info } from 'lucide-react';
+import { Check, User, X, Mail, Shield, Info, Loader2 } from 'lucide-react';
 
 interface Profile {
   id: string;
@@ -112,6 +112,7 @@ const Profile: React.FC = () => {
     setPasswordResetSent(false);
     setPasswordResetError(null);
 
+    try {
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/forgot-password`, {
         method: 'POST',
         headers: {
