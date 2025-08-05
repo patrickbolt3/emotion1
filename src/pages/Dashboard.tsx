@@ -3,6 +3,7 @@ import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Button } from '../components/ui/Button';
+import ChangePasswordModal from '../components/ChangePasswordModal';
 import { 
   Brain, 
   BarChart3, 
@@ -11,7 +12,8 @@ import {
   Settings, 
   LogOut, 
   ChevronDown,
-  PlusCircle
+  PlusCircle,
+  Lock
 } from 'lucide-react';
 
 // Dashboard sub-pages
@@ -93,6 +95,7 @@ const DashboardNav: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { role: userRole } = useUserRole();
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   
   const handleSignOut = async () => {
     await signOut();
@@ -228,6 +231,14 @@ const DashboardNav: React.FC = () => {
                     </Link>
                     
                     <button 
+                      onClick={() => setShowChangePasswordModal(true)}
+                      className="flex w-full items-center rounded-md px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <Lock className="mr-2 h-4 w-4" />
+                      Change Password
+                    </button>
+                    
+                    <button 
                       className="flex w-full items-center rounded-md px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                       onClick={handleSignOut}
                     >
@@ -241,6 +252,11 @@ const DashboardNav: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      <ChangePasswordModal
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+      />
     </header>
   );
 };

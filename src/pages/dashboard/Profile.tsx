@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../../components/ui/Button';
-import { Check, User, X, Mail, Shield, Info, Loader2 } from 'lucide-react';
+import { Check, User, X } from 'lucide-react';
 
 interface Profile {
   id: string;
@@ -22,11 +22,6 @@ const Profile: React.FC = () => {
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Password reset state
-  const [sendingPasswordReset, setSendingPasswordReset] = useState(false);
-  const [passwordResetSent, setPasswordResetSent] = useState(false);
-  const [passwordResetError, setPasswordResetError] = useState<string | null>(null);
-  
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -105,45 +100,6 @@ const Profile: React.FC = () => {
     }
   };
 
-  const handleSendPasswordReset = async () => {
-    if (!user?.email) return;
-
-    setSendingPasswordReset(true);
-    setPasswordResetSent(false);
-    setPasswordResetError(null);
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/forgot-password`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: user.email
-        })
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to send password reset email');
-      }
-
-      setPasswordResetSent(true);
-
-      // Hide success message after 10 seconds
-      setTimeout(() => {
-        setPasswordResetSent(false);
-      }, 10000);
-    } catch (error: any) {
-      console.error('Error sending password reset:', error);
-      setPasswordResetError(error.message || 'Failed to send password reset email');
-    } finally {
-      setSendingPasswordReset(false);
-    }
-  };
-  
   if (loading) {
     return (
       <div className="animate-pulse max-w-3xl mx-auto">
@@ -208,20 +164,6 @@ const Profile: React.FC = () => {
             </div>
           )}
 
-          {passwordResetSent && (
-            <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md flex items-center">
-              <Mail className="h-5 w-5 mr-2" />
-              Password reset email sent! Check your inbox for the reset link.
-            </div>
-          )}
-
-          {passwordResetError && (
-            <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md flex items-center">
-              <X className="h-5 w-5 mr-2" />
-              {passwordResetError}
-            </div>
-          )}
-          
           <form onSubmit={handleUpdateProfile}>
             <div className="space-y-6">
               <div>
@@ -288,54 +230,6 @@ const Profile: React.FC = () => {
                   />
                 </div>
                 <p className="mt-1 text-xs text-gray-500">Role can only be changed by an administrator</p>
-              </div>
-              
-              {/* Password Reset Section */}
-              <div className="border-t border-gray-200 pt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900">Password</h3>
-                    <p className="text-sm text-gray-500">Send a password reset email to change your password securely</p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleSendPasswordReset}
-                    disabled={sendingPasswordReset || passwordResetSent}
-                  >
-                    {sendingPasswordReset ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Sending...
-                      </>
-                    ) : passwordResetSent ? (
-                      <>
-                        <Check className="h-4 w-4 mr-2" />
-                        Email Sent
-                      </>
-                    ) : (
-                      <>
-                        <Mail className="h-4 w-4 mr-2" />
-                        Send Reset Email
-                      </>
-                    )}
-                  </Button>
-                </div>
-                
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex items-start">
-                    <Info className="h-5 w-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
-                    <div className="flex-1">
-                      <h4 className="text-sm font-medium text-blue-800 mb-1">Secure Password Reset</h4>
-                      <p className="text-sm text-blue-700 mb-3">
-                        For security, we'll send a password reset link to your email address: <strong>{profile.email}</strong>
-                      </p>
-                      <p className="text-xs text-blue-600">
-                        You'll receive an email with a secure link to reset your password. This ensures only you can change your password.
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </div>
               
               <div className="flex items-center justify-between pt-4">
