@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -41,59 +41,59 @@ const useUserRole = () => {
   const [isPasswordUpdated, setIsPasswordUpdated] = React.useState<boolean>(true);
   const [loading, setLoading] = React.useState(true);
 
-  React.useEffect(() => {
-    const fetchUserRole = async () => {
-      if (!user) {
-        console.log('No user found, setting loading to false');
-        setLoading(false);
-        return;
+  const fetchUserRole = useCallback(async () => {
+    if (!user) {
+      console.log('No user found, setting loading to false');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      console.log('Fetching role for user:', user.id);
+      console.log('User email:', user.email);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role, is_password_updated')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Database error fetching role:', error);
+        console.error('Error details:', error.message, error.code, error.details);
+        throw error;
       }
-
-      try {
-        console.log('Fetching role for user:', user.id);
-        console.log('User email:', user.email);
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role, is_password_updated')
-          .eq('id', user.id)
-          .single();
-
-        if (error) {
-          console.error('Database error fetching role:', error);
-          console.error('Error details:', error.message, error.code, error.details);
-          throw error;
-        }
-        
-        console.log('User role from database:', data?.role);
-        console.log('Password updated status:', data?.is_password_updated);
-        console.log('Full profile data:', data);
-        
-        if (!data) {
-          console.error('No profile data returned for user:', user.id);
-          setRole('respondent'); // Default fallback
-          setIsPasswordUpdated(true); // Default to true for safety
-        } else {
-          setRole(data.role || 'respondent');
-          setIsPasswordUpdated(data.is_password_updated ?? true);
-        }
-      } catch (err) {
-        console.error('Error fetching user role:', err);
-        // If it's a connection error, show a more helpful message
-        if (err instanceof TypeError && err.message.includes('fetch')) {
-          console.error('Supabase connection failed. Please check your environment variables.');
-        }
+      
+      console.log('User role from database:', data?.role);
+      console.log('Password updated status:', data?.is_password_updated);
+      console.log('Full profile data:', data);
+      
+      if (!data) {
+        console.error('No profile data returned for user:', user.id);
         setRole('respondent'); // Default fallback
         setIsPasswordUpdated(true); // Default to true for safety
-      } finally {
-        console.log('Setting loading to false');
-        setLoading(false);
+      } else {
+        setRole(data.role || 'respondent');
+        setIsPasswordUpdated(data.is_password_updated ?? true);
       }
-    };
-
-    fetchUserRole();
+    } catch (err) {
+      console.error('Error fetching user role:', err);
+      // If it's a connection error, show a more helpful message
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        console.error('Supabase connection failed. Please check your environment variables.');
+      }
+      setRole('respondent'); // Default fallback
+      setIsPasswordUpdated(true); // Default to true for safety
+    } finally {
+      console.log('Setting loading to false');
+      setLoading(false);
+    }
   }, [user]);
 
-  return { role, isPasswordUpdated, loading, refetch: () => fetchUserRole() };
+  React.useEffect(() => {
+    fetchUserRole();
+  }, [fetchUserRole]);
+
+  return { role, isPasswordUpdated, loading, refetch: fetchUserRole };
 };
 
 const DashboardNav: React.FC = () => {
