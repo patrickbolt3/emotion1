@@ -990,13 +990,17 @@ const ResultVisual: React.FC<{ state: HarmonicState }> = ({ state }) => {
             damping: 20,
             delay: 0.3 
           }}
-          className="w-28 h-28 rounded-full mx-auto mb-6 flex items-center justify-center shadow-xl"
+          className={`w-28 h-28 rounded-full mx-auto mb-6 flex items-center justify-center shadow-xl ${
+            getHarmonicStateTextColor(state.color)
+          } ${
+            state.color === '#FFFFFF' ? 'border-4 border-gray-300' : ''
+          }`}
           style={{ 
             backgroundColor: state.color,
             boxShadow: `0 10px 25px rgba(${hexToRgb(state.color)}, 0.3)` 
           }}
         >
-          <Brain className="h-14 w-14 text-white" />
+          <Brain className="h-14 w-14" />
         </motion.div>
         
         <motion.h3 
@@ -1635,11 +1639,7 @@ const Results: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div 
-                              className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
-                                getHarmonicStateTextColor(question.state_color || '#6B7280')
-                              } ${
-                                question.state_color === '#FFFFFF' ? 'border-2 border-gray-300' : ''
-                              }`}
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
                               style={{ backgroundColor: score > 0 ? (question.state_color || '#6B7280') : '#D1D5DB' }}
                             >
                               {score || '-'}
@@ -1650,9 +1650,7 @@ const Results: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div 
-                              className={`w-3 h-3 rounded-full mr-2 ${
-                                question.state_color === '#FFFFFF' ? 'border border-gray-400' : ''
-                              }`}
+                              className="w-3 h-3 rounded-full mr-2"
                               style={{ backgroundColor: question.state_color || '#6B7280' }}
                             ></div>
                             <span className="text-sm text-gray-900">
