@@ -14,6 +14,7 @@ import QuestionsPreview from './pages/QuestionsPreview';
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import EmotionalStatesPage from './pages/EmotionalStatesPage';
+import ResetPassword from './pages/ResetPassword';
 
 // Protected Route Component
 import ProtectedRoute from './components/ProtectedRoute';
@@ -54,6 +55,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/results-preview" element={<ResultsMockup />} />
       <Route path="/questions-preview" element={<QuestionsPreview />} />
       <Route path="/emotional-states" element={<EmotionalStatesPage />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       
       {/* Protected routes */}
       <Route 
