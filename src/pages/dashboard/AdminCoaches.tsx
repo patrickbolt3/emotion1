@@ -35,9 +35,12 @@ const AdminCoaches: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
-    fetchUserRole();
-    fetchCoaches();
-  }, []);
+    const initializeData = async () => {
+      await fetchUserRole();
+      await fetchCoaches();
+    };
+    initializeData();
+  }, [user]);
 
   const fetchUserRole = async () => {
     if (!user) return;
@@ -57,8 +60,21 @@ const AdminCoaches: React.FC = () => {
   };
 
   const fetchCoaches = async () => {
+    if (!user) return;
+    
     try {
-      // Get coaches based on user role
+      // First get the current user's role
+      const { data: currentUserProfile, error: roleError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (roleError) throw roleError;
+      
+      const currentUserRole = currentUserProfile?.role;
+      
+      // Build query based on user role
       let query = supabase
         .from('profiles')
         .select(`
@@ -70,8 +86,8 @@ const AdminCoaches: React.FC = () => {
         `)
         .eq('role', 'coach');
 
-      // If user is a partner, only show coaches they manage
-      if (userRole === 'partner') {
+      // If current user is a partner, only show coaches they manage (where trainer_id = partner's id)
+      if (currentUserRole === 'partner') {
         query = query.eq('trainer_id', user?.id);
       }
 
