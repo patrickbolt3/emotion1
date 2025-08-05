@@ -36,91 +36,107 @@ const AdminRespondents: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
-    fetchUserRole();
-    const fetchRespondents = async () => {
-      try {
-        // Get respondents based on user role - for partners, only show clients of their coaches
-        let query = supabase
-          .from('profiles')
-          .select(`
-            id,
+    const initializeData = async () => {
+      await fetchUserRole();
+      await fetchRespondents();
+    };
+    initializeData();
+  }, [user]);
+
+  const fetchRespondents = async () => {
+    if (!user) return;
+    
+    try {
+      // First get the current user's role
+      const { data: currentUserProfile, error: roleError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (roleError) throw roleError;
+      
+      const currentUserRole = currentUserProfile?.role;
+      
+      // Get respondents based on user role - for partners, only show clients of their coaches
+      let query = supabase
+        .from('profiles')
+        .select(`
+          id,
+          first_name,
+          last_name,
+          email,
+          created_at,
+          coach_id,
+          coach:coach_id (
             first_name,
-            last_name,
-            email,
-            created_at,
-            coach_id,
-            coach:coach_id (
-              first_name,
-              last_name
-            )
-          `)
-          .eq('role', 'respondent');
+            last_name
+          )
+        `)
+        .eq('role', 'respondent');
 
-        // If user is a partner, only show clients of coaches they manage
-        if (userRole === 'partner') {
-          // First get the coach IDs managed by this partner
-          const { data: partnerCoaches, error: coachError } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('trainer_id', user?.id)
-            .eq('role', 'coach');
+      // If user is a partner, only show clients of coaches they manage
+      if (currentUserRole === 'partner') {
+        // First get the coach IDs managed by this partner
+        const { data: partnerCoaches, error: coachError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('trainer_id', user?.id)
+          .eq('role', 'coach');
 
-          if (coachError) throw coachError;
+        if (coachError) throw coachError;
 
-          const coachIds = partnerCoaches?.map(c => c.id) || [];
-          
-          if (coachIds.length === 0) {
-            // No coaches, so no clients to show
-            setRespondents([]);
-            return;
-          }
-
-          query = query.in('coach_id', coachIds);
+        const coachIds = partnerCoaches?.map(c => c.id) || [];
+        
+        if (coachIds.length === 0) {
+          // No coaches, so no clients to show
+          setRespondents([]);
+          setLoading(false);
+          return;
         }
 
-        const { data: respondentData, error: respondentError } = await supabase
-          query.order('created_at', { ascending: false });
-
-        if (respondentError) throw respondentError;
-
-        // Get assessment data for each respondent
-        const respondentsWithAssessments = await Promise.all(
-          (respondentData || []).map(async (respondent: any) => {
-            // Get all assessments for this respondent
-            const { data: assessments, error: assessmentError } = await supabase
-              .from('assessments')
-              .select('id, created_at, completed, dominant_state')
-              .eq('user_id', respondent.id)
-              .order('created_at', { ascending: false });
-
-            if (assessmentError) throw assessmentError;
-
-            const completedAssessments = (assessments || []).filter((a: any) => a.completed) || [];
-            const latestAssessment = assessments && assessments.length > 0 ? assessments[0] : undefined;
-
-            return {
-              ...respondent,
-              assessment_count: assessments?.length || 0,
-              completed_assessments: completedAssessments.length,
-              latest_assessment: latestAssessment,
-              coach_name: respondent.coach 
-                ? `${respondent.coach.first_name || ''} ${respondent.coach.last_name || ''}`.trim()
-                : null
-            } as Respondent;
-          })
-        );
-
-        setRespondents(respondentsWithAssessments);
-      } catch (err: any) {
-        console.error('Error fetching respondents:', err);
-        setError(err.message || 'Failed to load respondents');
-      } finally {
-        setLoading(false);
+        query = query.in('coach_id', coachIds);
       }
-    };
 
-    fetchRespondents();
-  }, []);
+      const { data: respondentData, error: respondentError } = await query.order('created_at', { ascending: false });
+
+      if (respondentError) throw respondentError;
+
+      // Get assessment data for each respondent
+      const respondentsWithAssessments = await Promise.all(
+        (respondentData || []).map(async (respondent: any) => {
+          // Get all assessments for this respondent
+          const { data: assessments, error: assessmentError } = await supabase
+            .from('assessments')
+            .select('id, created_at, completed, dominant_state')
+            .eq('user_id', respondent.id)
+            .order('created_at', { ascending: false });
+
+          if (assessmentError) throw assessmentError;
+
+          const completedAssessments = (assessments || []).filter((a: any) => a.completed) || [];
+          const latestAssessment = assessments && assessments.length > 0 ? assessments[0] : undefined;
+
+          return {
+            ...respondent,
+            assessment_count: assessments?.length || 0,
+            completed_assessments: completedAssessments.length,
+            latest_assessment: latestAssessment,
+            coach_name: respondent.coach 
+              ? `${respondent.coach.first_name || ''} ${respondent.coach.last_name || ''}`.trim()
+              : null
+          } as Respondent;
+        })
+      );
+
+      setRespondents(respondentsWithAssessments);
+    } catch (err: any) {
+      console.error('Error fetching respondents:', err);
+      setError(err.message || 'Failed to load respondents');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchUserRole = async () => {
     if (!user) return;
