@@ -60,7 +60,33 @@ const useUserRole = () => {
       if (error) {
         console.error('Database error fetching role:', error);
         console.error('Error details:', error.message, error.code, error.details);
-        throw error;
+        
+        // If profile doesn't exist, create it for admin users
+        if (error.code === 'PGRST116' && user.email === 'adhiyadeep@outlook.com') {
+          console.log('Creating admin profile for:', user.email);
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              id: user.id,
+              email: user.email,
+              role: 'admin',
+              first_name: 'Admin',
+              last_name: 'User',
+              is_password_updated: true
+            });
+          
+          if (insertError) {
+            console.error('Error creating admin profile:', insertError);
+            setRole('admin'); // Default to admin for this email
+            setIsPasswordUpdated(true);
+          } else {
+            setRole('admin');
+            setIsPasswordUpdated(true);
+          }
+        } else {
+          throw error;
+        }
+        return;
       }
       
       console.log('User role from database:', data?.role);
@@ -69,7 +95,12 @@ const useUserRole = () => {
       
       if (!data) {
         console.error('No profile data returned for user:', user.id);
-        setRole('respondent'); // Default fallback
+        // Check if this is the admin email
+        if (user.email === 'adhiyadeep@outlook.com') {
+          setRole('admin');
+        } else {
+          setRole('respondent'); // Default fallback
+        }
         setIsPasswordUpdated(true); // Default to true for safety
       } else {
         setRole(data.role || 'respondent');
@@ -81,7 +112,12 @@ const useUserRole = () => {
       if (err instanceof TypeError && err.message.includes('fetch')) {
         console.error('Supabase connection failed. Please check your environment variables.');
       }
-      setRole('respondent'); // Default fallback
+      // Check if this is the admin email even on error
+      if (user?.email === 'adhiyadeep@outlook.com') {
+        setRole('admin');
+      } else {
+        setRole('respondent'); // Default fallback
+      }
       setIsPasswordUpdated(true); // Default to true for safety
     } finally {
       console.log('Setting loading to false');
