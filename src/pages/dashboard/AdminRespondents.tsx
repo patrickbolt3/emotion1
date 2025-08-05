@@ -76,8 +76,12 @@ const AdminRespondents: React.FC = () => {
         `)
         .eq('role', 'respondent');
 
+      // If user is a coach, only show their own clients
+      if (currentUserRole === 'coach') {
+        query = query.eq('coach_id', user.id);
+      }
       // If user is a partner, only show clients of coaches they manage
-      if (currentUserRole === 'partner') {
+      else if (currentUserRole === 'partner') {
         // First get the coach IDs managed by this partner
         const { data: partnerCoaches, error: coachError } = await supabase
           .from('profiles')
