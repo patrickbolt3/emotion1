@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../../components/ui/Button';
 import { Check, User, X, Lock, Eye, EyeOff } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 interface Profile {
   id: string;
@@ -114,6 +115,7 @@ const Profile: React.FC = () => {
   
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setPasswordUpdating(true);
     setPasswordSuccess(false);
     setPasswordError(null);
@@ -129,16 +131,11 @@ const Profile: React.FC = () => {
       setPasswordError('New passwords do not match');
       setPasswordUpdating(false);
       return;
-    }
-    
-    try {
-      // Update password directly - Supabase will handle current password verification
-      const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
         // Include current password for verification if supported
         ...(currentPassword && { currentPassword })
-      });
-      
+    
+    try {
       if (updateError) {
         // Handle specific error cases
         if (updateError.message.includes('Invalid login credentials') || 
@@ -432,7 +429,14 @@ const Profile: React.FC = () => {
                         disabled={passwordUpdating}
                         className="flex-1"
                       >
-                        {passwordUpdating ? 'Updating...' : 'Update Password'}
+                       {passwordUpdating ? (
+                         <>
+                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                           Updating...
+                         </>
+                       ) : (
+                         'Update Password'
+                       )}
                       </Button>
                     </div>
                   </form>
