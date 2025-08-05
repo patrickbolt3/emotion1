@@ -57,7 +57,7 @@ const LikertScale: React.FC<{
             whileTap={{ scale: 0.95 }}
             className={`flex-1 h-14 rounded-md border-2 transition-all duration-300 shadow-sm ${
               value === rating
-                ? 'border-transparent text-white font-medium shadow-md'
+                ? `border-transparent font-medium shadow-md ${getHarmonicStateTextColor(color)}`
                 : 'border-gray-200 hover:border-gray-300 text-gray-700'
             }`}
             style={value === rating ? { backgroundColor: color } : {}}

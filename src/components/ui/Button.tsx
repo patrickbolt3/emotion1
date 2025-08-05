@@ -45,10 +45,14 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, rounded, asChild = false, emotionColor, ...props }, ref) => {
-    // Apply emotion color as background if provided and variant is 'emotion'
+    // Apply emotion color as background and appropriate text color if provided and variant is 'emotion'
     const style: React.CSSProperties = {};
+    let emotionTextColorClass = '';
+    
     if (variant === 'emotion' && emotionColor) {
       style.backgroundColor = emotionColor;
+      emotionTextColorClass = getHarmonicStateTextColor(emotionColor);
+      
       // Convert hex to RGB for the glow effect
       const hexToRgb = (hex: string) => {
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -59,9 +63,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       style.boxShadow = `0 4px 14px 0 rgba(${hexToRgb(emotionColor)}, 0.39)`;
     }
 
+    // Combine the base className with emotion text color if applicable
+    const finalClassName = variant === 'emotion' && emotionTextColorClass 
+      ? cn(buttonVariants({ variant, size, rounded }), emotionTextColorClass, className)
+      : cn(buttonVariants({ variant, size, rounded, className }));
+
     return (
       <button
-        className={cn(buttonVariants({ variant, size, rounded, className }))}
+        className={finalClassName}
         ref={ref}
         style={style}
         {...props}
