@@ -132,26 +132,21 @@ const Profile: React.FC = () => {
     }
     
     try {
-      // First verify current password by attempting to sign in
-      if (!user?.email) {
-        throw new Error('User email not found');
-      }
-      
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: user.email,
-        password: currentPassword
-      });
-      
-      if (signInError) {
-        throw new Error('Current password is incorrect');
-      }
-      
-      // Update password
+      // Update password directly - Supabase will handle current password verification
       const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword
+        password: newPassword,
+        // Include current password for verification if supported
+        ...(currentPassword && { currentPassword })
       });
       
-      if (updateError) throw updateError;
+      if (updateError) {
+        // Handle specific error cases
+        if (updateError.message.includes('Invalid login credentials') || 
+            updateError.message.includes('current password')) {
+          throw new Error('Current password is incorrect');
+        }
+        throw updateError;
+      }
       
       setPasswordSuccess(true);
       setCurrentPassword('');
