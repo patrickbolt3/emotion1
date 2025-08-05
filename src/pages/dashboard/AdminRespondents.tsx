@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { ArrowLeft, User, BarChart3, Calendar, MoreVertical, CheckCircle, Clock, XCircle, Search, Filter, SortAsc, SortDesc } from 'lucide-react';
 
