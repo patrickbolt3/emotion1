@@ -7,6 +7,7 @@ import PDFGenerator from '../components/PDFGenerator';
 import { Brain, ChevronRight, Share2, Sparkles, Info, BarChart3, ArrowLeft, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getHarmonicStateTextColor } from '../lib/utils';
+import { getStateDetailsByName } from '../data/harmonicStateDetails';
 
 interface Assessment {
   id: string;
@@ -382,6 +383,79 @@ const Results: React.FC = () => {
             </div>
           </motion.div>
           
+          {/* Comprehensive State Details */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.8 }}
+            className="mt-8 bg-white rounded-xl shadow-md p-6 mb-8 relative overflow-hidden"
+          >
+            <div 
+              className="absolute top-0 left-0 w-full h-1" 
+              style={{ backgroundColor: dominantState.color }}
+            ></div>
+            
+            <h3 className="text-xl font-bold pl-3 mb-6" style={{ color: dominantState.color }}>
+              Understanding {dominantState.name} in Detail
+            </h3>
+            
+            {(() => {
+              const stateDetails = getStateDetailsByName(dominantState.name);
+              if (!stateDetails) return null;
+              
+              const sections = [
+                { title: "Core Beliefs", content: stateDetails.coreBeliefs, icon: "💭" },
+                { title: "Behavior Patterns", content: stateDetails.behaviorPatterns, icon: "🎭" },
+                { title: "Communication", content: stateDetails.communicationPatterns, icon: "💬" },
+                { title: "Coaching Notes", content: stateDetails.coachingNotes, icon: "🎯" },
+                { title: "Connection", content: stateDetails.connection, icon: "🤝" },
+                { title: "Reality", content: stateDetails.reality, icon: "🌍" },
+                { title: "Understanding", content: stateDetails.understanding, icon: "🧠" },
+                { title: "Change", content: stateDetails.change, icon: "🔄" },
+                { title: "Responsibility", content: stateDetails.responsibility, icon: "⚖️" },
+                { title: "Help", content: stateDetails.help, icon: "🤲" },
+                { title: "Work", content: stateDetails.work, icon: "💼" },
+                { 
+                  title: "Emotional Driver", 
+                  content: [stateDetails.emotionalDriver.title, stateDetails.emotionalDriver.description], 
+                  icon: "⚡" 
+                }
+              ];
+              
+              return (
+                <div className="pl-3">
+                  <div className="mb-6 p-4 rounded-lg" style={{ backgroundColor: `${dominantState.color}10`, border: `1px solid ${dominantState.color}30` }}>
+                    <h4 className="font-semibold text-gray-800 mb-2">Theme</h4>
+                    <p className="text-gray-700 italic">{stateDetails.theme}</p>
+                  </div>
+                  
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {sections.map((section, index) => (
+                      <div 
+                        key={section.title}
+                        className="bg-gray-50 border border-gray-200 p-4 rounded-lg hover:shadow-md transition-shadow duration-300"
+                        style={{ borderLeftColor: dominantState.color, borderLeftWidth: '3px' }}
+                      >
+                        <h4 className="font-bold text-gray-800 mb-3 flex items-center">
+                          <span className="mr-2 text-lg">{section.icon}</span>
+                          <span style={{ color: dominantState.color }}>{section.title}</span>
+                        </h4>
+                        <ul className="space-y-2 text-sm text-gray-700">
+                          {section.content.map((item, itemIndex) => (
+                            <li key={itemIndex} className="flex items-start">
+                              <span className="mr-2 text-xs mt-1" style={{ color: dominantState.color }}>•</span>
+                              <span className="leading-relaxed">{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+          </motion.div>
+          
           {/* AI Insight */}
           <AIInsight 
             state={dominantState} 
@@ -392,7 +466,7 @@ const Results: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
+            transition={{ duration: 0.5, delay: 0.9 }}
             className="mt-8 bg-white rounded-xl shadow-md overflow-hidden"
           >
             <div className="px-6 py-4 border-b border-gray-200">
@@ -472,7 +546,7 @@ const Results: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.9 }}
+              transition={{ duration: 0.5, delay: 1.0 }}
               className="mt-8 bg-white rounded-xl shadow-md p-6 relative overflow-hidden"
             >
               <div 
@@ -495,7 +569,7 @@ const Results: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 1.0 }}
+            transition={{ duration: 0.5, delay: 1.1 }}
             className="mt-8 bg-white rounded-xl shadow-md p-6 mb-8 relative overflow-hidden"
           >
             <div 
@@ -558,7 +632,7 @@ const Results: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 1.1 }}
+            transition={{ duration: 0.5, delay: 1.2 }}
             className="mt-8 p-6 mb-8 relative overflow-hidden bg-gray-900 rounded-xl text-white shadow-xl"
           >
             <div className="absolute inset-0 bg-spectrum-gradient opacity-20"></div>
@@ -604,7 +678,7 @@ const Results: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 1.2 }}
+            transition={{ duration: 0.5, delay: 1.3 }}
             className="mt-12 rounded-xl p-8 text-center relative overflow-hidden"
             style={{ 
               background: `linear-gradient(135deg, ${dominantState.color}15, ${dominantState.color}30)`,
