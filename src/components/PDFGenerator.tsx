@@ -359,12 +359,12 @@ const PDFGenerator: React.FC<PDFGeneratorProps> = ({
         pdf.text(
           `Emotional Dynamics Indicator™ - Generated on ${new Date().toLocaleDateString()}`,
           margin,
-          pageHeight - 10
+          pageHeight - 15
         );
         pdf.text(
           `Page ${i} of ${totalPages}`,
-          pageWidth - margin - 20,
-          pageHeight - 10
+          pageWidth - margin - 25,
+          pageHeight - 15
         );
       }
 
