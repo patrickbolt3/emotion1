@@ -13,13 +13,13 @@ export default {
           anger: '#EF5350',        // Red
           antagonism: '#FF7043',   // Orange-red
           boredom: '#FFA726',      // Amber
-          willingness: '#FFEE58',  // Yellow
+          willingness: '#F9A825',  // Darker yellow/gold
           stability: '#9CCC65',    // Light green
           enthusiasm: '#26A69A',   // Teal
           exhilaration: '#42A5F5', // Blue
           action: '#5C6BC0',       // Indigo
           creativePower: '#AB47BC', // Purple
-          pureAwareness: '#FFFFFF', // White
+          pureAwareness: '#E8EAF6', // Light indigo-gray
         },
         gradient: {
           start: '#4F46E5',
