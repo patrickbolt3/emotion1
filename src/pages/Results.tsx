@@ -7,7 +7,6 @@ import PDFGenerator from '../components/PDFGenerator';
 import { Brain, ChevronRight, Share2, Sparkles, Info, BarChart3, ArrowLeft, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getHarmonicStateTextColor } from '../lib/utils';
-import { getStateDetailsByName } from '../data/harmonicStateDetails';
 
 interface Assessment {
   id: string;
@@ -43,6 +42,14 @@ interface UserProfile {
   first_name: string | null;
   last_name: string | null;
   email: string;
+}
+
+interface StateScore {
+  state: HarmonicState;
+  score: number;
+  percentage: number;
+  questionCount: number;
+  averageScore: number;
 }
 
 // Helper function to convert hex to rgb
@@ -129,6 +136,7 @@ const Results: React.FC = () => {
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [dominantState, setDominantState] = useState<HarmonicState | null>(null);
   const [allStates, setAllStates] = useState<HarmonicState[]>([]);
+  const [stateScores, setStateScores] = useState<StateScore[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [responses, setResponses] = useState<Response[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -203,6 +211,14 @@ const Results: React.FC = () => {
         if (responsesError) throw responsesError;
         setResponses(responsesData || []);
 
+        // Calculate scores for all harmonic states
+        const calculatedStateScores = calculateAllStateScores(
+          statesData || [],
+          questionsData || [],
+          responsesData || []
+        );
+        setStateScores(calculatedStateScores);
+
       } catch (err: any) {
         console.error('Error loading results:', err);
         setError(err.message || 'Failed to load results');
@@ -213,6 +229,94 @@ const Results: React.FC = () => {
 
     fetchResults();
   }, [id, navigate]);
+
+  const calculateAllStateScores = (
+    states: HarmonicState[],
+    questions: Question[],
+    responses: Response[]
+  ): StateScore[] => {
+    const stateScoreMap: Record<string, { totalScore: number; questionCount: number }> = {};
+    
+    // Initialize all states
+    states.forEach(state => {
+      stateScoreMap[state.id] = { totalScore: 0, questionCount: 0 };
+    });
+    
+    // Calculate scores for each state based on responses
+    responses.forEach(response => {
+      const question = questions.find(q => q.id === response.question_id);
+      if (question && question.harmonic_state) {
+        stateScoreMap[question.harmonic_state].totalScore += response.score;
+        stateScoreMap[question.harmonic_state].questionCount += 1;
+      }
+    });
+    
+    // Calculate total possible score for percentage calculation
+    const totalPossibleScore = responses.length * 7; // Max score per question is 7
+    const totalActualScore = responses.reduce((sum, r) => sum + r.score, 0);
+    
+    // Create StateScore objects
+    const stateScores = states.map(state => {
+      const stateData = stateScoreMap[state.id];
+      const score = stateData.totalScore;
+      const questionCount = stateData.questionCount;
+      const averageScore = questionCount > 0 ? score / questionCount : 0;
+      const percentage = totalActualScore > 0 ? (score / totalActualScore) * 100 : 0;
+      
+      return {
+        state,
+        score,
+        percentage,
+        questionCount,
+        averageScore
+      };
+    });
+    
+    // Sort by score (highest first)
+    return stateScores.sort((a, b) => b.score - a.score);
+  };
+
+  const generateDynamicInsights = (userStateScores: StateScore[], userResponses: Response[], userQuestions: Question[]): string[] => {
+    const insights: string[] = [];
+    const topStates = userStateScores.slice(0, 3);
+    const dominantScore = userStateScores[0];
+    
+    if (dominantScore) {
+      insights.push(`Your strongest pattern is ${dominantScore.state.name} with a score of ${dominantScore.score} (${dominantScore.percentage.toFixed(1)}% of your total responses).`);
+    }
+    
+    if (topStates.length > 1) {
+      const secondState = topStates[1];
+      insights.push(`Your secondary pattern is ${secondState.state.name} with ${secondState.score} points, showing you also have capacity in this area.`);
+    }
+    
+    if (topStates.length > 2) {
+      const thirdState = topStates[2];
+      insights.push(`You also show significant presence in ${thirdState.state.name} (${thirdState.score} points), indicating emotional range and flexibility.`);
+    }
+    
+    // Analyze response patterns
+    const highScores = userResponses.filter(r => r.score >= 6).length;
+    const lowScores = userResponses.filter(r => r.score <= 2).length;
+    
+    if (highScores > userResponses.length * 0.3) {
+      insights.push(`You gave high ratings (6-7) to ${highScores} questions, showing strong self-awareness and confidence in your responses.`);
+    }
+    
+    if (lowScores > userResponses.length * 0.2) {
+      insights.push(`You gave low ratings (1-2) to ${lowScores} questions, indicating clear boundaries about what doesn't resonate with you.`);
+    }
+    
+    // Average score insight
+    const avgScore = userResponses.reduce((sum, r) => sum + r.score, 0) / userResponses.length;
+    if (avgScore >= 5.5) {
+      insights.push(`Your overall response average of ${avgScore.toFixed(1)} suggests you generally identify strongly with the patterns you recognize in yourself.`);
+    } else if (avgScore <= 3.5) {
+      insights.push(`Your overall response average of ${avgScore.toFixed(1)} suggests you may be in a period of transition or questioning your current patterns.`);
+    }
+    
+    return insights;
+  };
 
   if (loading) {
     return (
@@ -246,18 +350,12 @@ const Results: React.FC = () => {
   }
 
   // Calculate state breakdown for PDF
-  const stateBreakdown = allStates.map(state => {
-    const stateScore = assessment.results?.[state.id] || 0;
-    const totalScore = Object.values(assessment.results || {}).reduce((sum: number, score: any) => sum + (score || 0), 0);
-    const percentage = totalScore > 0 ? (stateScore / totalScore) * 100 : 0;
-    
-    return {
-      name: state.name,
-      score: stateScore,
-      color: state.color,
-      percentage
-    };
-  }).filter(state => state.score > 0).sort((a, b) => b.score - a.score);
+  const stateBreakdown = stateScores.map(stateScore => ({
+    name: stateScore.state.name,
+    score: stateScore.score,
+    color: stateScore.state.color,
+    percentage: stateScore.percentage
+  }));
 
   // Prepare detailed responses for PDF
   const detailedResponses = responses.map(response => {
@@ -292,8 +390,10 @@ const Results: React.FC = () => {
     completionDate: assessment.created_at,
     responses: detailedResponses,
     stateBreakdown,
-    aiInsight: `Hey ${userProfile.first_name}! It looks like you're currently operating from a state of ${dominantState.name}. This doesn't mean you're stuck — it means you have a particular emotional pattern that influences how you perceive and interact with the world. Understanding this can be a powerful first step toward growth and transformation. Want to learn how to evolve this into an even more empowering state?`
+    aiInsight: generateDynamicInsights(stateScores, responses, questions).join(' ')
   };
+
+  const dynamicInsights = generateDynamicInsights(stateScores, responses, questions);
 
   return (
     <div className="min-h-screen bg-gray-50 relative">
@@ -372,7 +472,7 @@ const Results: React.FC = () => {
                   border: dominantState.color === '#FFFFFF' ? '2px solid #E5E7EB' : 'none'
                 }}
               >
-                {assessment.results?.[dominantState.id] || 0}
+                {stateScores.find(s => s.state.id === dominantState.id)?.score || 0}
               </div>
               <h3 className="text-3xl font-bold mt-4 mb-4" style={{ color: dominantState.color }}>
                 {dominantState.name}
@@ -383,90 +483,119 @@ const Results: React.FC = () => {
             </div>
           </motion.div>
           
-          {/* Comprehensive State Details */}
+          {/* All Harmonic State Scores */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.8 }}
-            className="mt-8 bg-white rounded-xl shadow-md p-6 mb-8 relative overflow-hidden"
+            className="mt-8 bg-white rounded-xl shadow-md overflow-hidden"
+          >
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900">Complete Harmonic State Breakdown</h3>
+              <p className="text-sm text-gray-600">Your scores across all 14 emotional states</p>
+            </div>
+            
+            <div className="p-6">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {stateScores.map((stateScore, index) => (
+                  <motion.div
+                    key={stateScore.state.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    className={`bg-white border-2 rounded-xl p-6 text-center hover:shadow-lg transition-all duration-300 ${
+                      stateScore.state.id === dominantState?.id 
+                        ? 'ring-2 ring-offset-2 transform scale-105' 
+                        : 'hover:scale-105'
+                    }`}
+                    style={{ 
+                      borderColor: stateScore.state.id === dominantState?.id ? stateScore.state.color : '#E5E7EB',
+                      ringColor: stateScore.state.id === dominantState?.id ? stateScore.state.color : undefined
+                    }}
+                  >
+                    <div 
+                      className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-3 shadow-md"
+                      style={{ 
+                        backgroundColor: stateScore.state.color,
+                        color: getHarmonicStateTextColor(stateScore.state.color),
+                        border: stateScore.state.color === '#FFFFFF' ? '2px solid #E5E7EB' : 'none'
+                      }}
+                    >
+                      {stateScore.score}
+                    </div>
+                    
+                    <h4 className="font-bold text-gray-900 mb-2" style={{ 
+                      color: stateScore.state.id === dominantState?.id ? stateScore.state.color : undefined 
+                    }}>
+                      {stateScore.state.name}
+                    </h4>
+                    
+                    <div className="text-xs text-gray-500 space-y-1">
+                      <div>{stateScore.percentage.toFixed(1)}% of total</div>
+                      <div>{stateScore.questionCount} questions</div>
+                      <div>Avg: {stateScore.averageScore.toFixed(1)}/7</div>
+                    </div>
+                    
+                    {stateScore.state.id === dominantState?.id && (
+                      <div className="mt-3 px-2 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-medium rounded-full">
+                        Dominant State
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+          
+          {/* Dynamic AI Insights */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.9 }}
+            className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 border border-gray-200 shadow-md relative overflow-hidden"
           >
             <div 
               className="absolute top-0 left-0 w-full h-1" 
-              style={{ backgroundColor: dominantState.color }}
+              style={{ background: `linear-gradient(to right, ${dominantState.color}, #8B5CF6)` }}
             ></div>
             
-            <h3 className="text-xl font-bold pl-3 mb-6" style={{ color: dominantState.color }}>
-              Understanding {dominantState.name} in Detail
-            </h3>
-            
-            {(() => {
-              const stateDetails = getStateDetailsByName(dominantState.name);
-              if (!stateDetails) return null;
-              
-              const sections = [
-                { title: "Core Beliefs", content: stateDetails.coreBeliefs, icon: "💭" },
-                { title: "Behavior Patterns", content: stateDetails.behaviorPatterns, icon: "🎭" },
-                { title: "Communication", content: stateDetails.communicationPatterns, icon: "💬" },
-                { title: "Coaching Notes", content: stateDetails.coachingNotes, icon: "🎯" },
-                { title: "Connection", content: stateDetails.connection, icon: "🤝" },
-                { title: "Reality", content: stateDetails.reality, icon: "🌍" },
-                { title: "Understanding", content: stateDetails.understanding, icon: "🧠" },
-                { title: "Change", content: stateDetails.change, icon: "🔄" },
-                { title: "Responsibility", content: stateDetails.responsibility, icon: "⚖️" },
-                { title: "Help", content: stateDetails.help, icon: "🤲" },
-                { title: "Work", content: stateDetails.work, icon: "💼" },
-                { 
-                  title: "Emotional Driver", 
-                  content: [stateDetails.emotionalDriver.title, stateDetails.emotionalDriver.description], 
-                  icon: "⚡" 
-                }
-              ];
-              
-              return (
-                <div className="pl-3">
-                  <div className="mb-6 p-4 rounded-lg" style={{ backgroundColor: `${dominantState.color}10`, border: `1px solid ${dominantState.color}30` }}>
-                    <h4 className="font-semibold text-gray-800 mb-2">Theme</h4>
-                    <p className="text-gray-700 italic">{stateDetails.theme}</p>
-                  </div>
-                  
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {sections.map((section, index) => (
-                      <div 
-                        key={section.title}
-                        className="bg-gray-50 border border-gray-200 p-4 rounded-lg hover:shadow-md transition-shadow duration-300"
-                        style={{ borderLeftColor: dominantState.color, borderLeftWidth: '3px' }}
-                      >
-                        <h4 className="font-bold text-gray-800 mb-3 flex items-center">
-                          <span className="mr-2 text-lg">{section.icon}</span>
-                          <span style={{ color: dominantState.color }}>{section.title}</span>
-                        </h4>
-                        <ul className="space-y-2 text-sm text-gray-700">
-                          {section.content.map((item, itemIndex) => (
-                            <li key={itemIndex} className="flex items-start">
-                              <span className="mr-2 text-xs mt-1" style={{ color: dominantState.color }}>•</span>
-                              <span className="leading-relaxed">{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
+            <div className="flex items-start space-x-4 pl-3">
+              <div className="flex-shrink-0">
+                <div 
+                  className="w-12 h-12 rounded-full flex items-center justify-center shadow-md"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${dominantState.color}, #8B5CF6)`, 
+                    boxShadow: `0 4px 10px rgba(${hexToRgb(dominantState.color)}, 0.2)` 
+                  }}
+                >
+                  <Sparkles className="h-6 w-6 text-white" />
                 </div>
-              );
-            })()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-bold" style={{ 
+                  background: `linear-gradient(to right, ${dominantState.color}, #8B5CF6)`, 
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}>
+                  Personalized Insights
+                </h3>
+                
+                <div className="mt-3 space-y-3">
+                  {dynamicInsights.map((insight, index) => (
+                    <p key={index} className="text-gray-600 text-sm leading-relaxed">
+                      {insight}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </div>
           </motion.div>
-          
-          {/* AI Insight */}
-          <AIInsight 
-            state={dominantState} 
-            firstName={userProfile.first_name || 'there'}
-          />
           
           {/* Question Breakdown */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.9 }}
+            transition={{ duration: 0.5, delay: 1.0 }}
             className="mt-8 bg-white rounded-xl shadow-md overflow-hidden"
           >
             <div className="px-6 py-4 border-b border-gray-200">
@@ -546,7 +675,7 @@ const Results: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 1.0 }}
+              transition={{ duration: 0.5, delay: 1.1 }}
               className="mt-8 bg-white rounded-xl shadow-md p-6 relative overflow-hidden"
             >
               <div 
@@ -565,11 +694,11 @@ const Results: React.FC = () => {
             </motion.div>
           )}
           
-          {/* Understanding Your State */}
+          {/* Top 3 States Analysis */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 1.1 }}
+            transition={{ duration: 0.5, delay: 1.2 }}
             className="mt-8 bg-white rounded-xl shadow-md p-6 mb-8 relative overflow-hidden"
           >
             <div 
@@ -577,54 +706,44 @@ const Results: React.FC = () => {
               style={{ backgroundColor: dominantState.color }}
             ></div>
             
-            <h3 className="text-lg font-bold pl-3 mb-4" style={{ color: dominantState.color }}>
-              Understanding Your Dominant State
+            <h3 className="text-lg font-bold pl-3 mb-6" style={{ color: dominantState.color }}>
+              Your Top Emotional Patterns
             </h3>
-            <div className="grid gap-4 md:grid-cols-2 pl-3">
-              <div 
-                className="bg-white border border-gray-100 p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 transform hover:-translate-y-1" 
-                style={{ borderLeftColor: dominantState.color, borderLeftWidth: '3px' }}
-              >
-                <h4 className="font-bold text-gray-800 mb-3" style={{ color: dominantState.color }}>
-                  Strengths of {dominantState.name}
-                </h4>
-                <ul className="space-y-3 text-gray-700">
-                  <li className="flex items-start">
-                    <span className="mr-2 text-xl" style={{ color: dominantState.color }}>•</span>
-                    <span>Natural capacity for this emotional pattern</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="mr-2 text-xl" style={{ color: dominantState.color }}>•</span>
-                    <span>Ability to access this state consistently</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="mr-2 text-xl" style={{ color: dominantState.color }}>•</span>
-                    <span>Potential for growth from this foundation</span>
-                  </li>
-                </ul>
-              </div>
-              <div 
-                className="bg-white border border-gray-100 p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 transform hover:-translate-y-1" 
-                style={{ borderLeftColor: dominantState.color, borderLeftWidth: '3px' }}
-              >
-                <h4 className="font-bold text-gray-800 mb-3" style={{ color: dominantState.color }}>
-                  Growth Opportunities
-                </h4>
-                <ul className="space-y-3 text-gray-700">
-                  <li className="flex items-start">
-                    <span className="mr-2 text-xl" style={{ color: dominantState.color }}>•</span>
-                    <span>Develop awareness of this pattern</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="mr-2 text-xl" style={{ color: dominantState.color }}>•</span>
-                    <span>Practice accessing higher states</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="mr-2 text-xl" style={{ color: dominantState.color }}>•</span>
-                    <span>Build emotional flexibility and range</span>
-                  </li>
-                </ul>
-              </div>
+            
+            <div className="pl-3 space-y-4">
+              {stateScores.slice(0, 3).map((stateScore, index) => (
+                <div 
+                  key={stateScore.state.id}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border-l-4"
+                  style={{ borderLeftColor: stateScore.state.color }}
+                >
+                  <div className="flex items-center space-x-4">
+                    <div 
+                      className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-sm"
+                      style={{ 
+                        backgroundColor: stateScore.state.color,
+                        color: getHarmonicStateTextColor(stateScore.state.color),
+                        border: stateScore.state.color === '#FFFFFF' ? '2px solid #E5E7EB' : 'none'
+                      }}
+                    >
+                      {stateScore.score}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900">{stateScore.state.name}</h4>
+                      <p className="text-sm text-gray-600">{stateScore.percentage.toFixed(1)}% of your responses</p>
+                    </div>
+                  </div>
+                  <div className="text-right text-sm text-gray-500">
+                    <div>{stateScore.questionCount} questions</div>
+                    <div>Avg: {stateScore.averageScore.toFixed(1)}/7</div>
+                  </div>
+                  {index === 0 && (
+                    <div className="ml-4 px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-medium rounded-full">
+                      Primary
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </motion.div>
           
@@ -632,7 +751,7 @@ const Results: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 1.2 }}
+            transition={{ duration: 0.5, delay: 1.3 }}
             className="mt-8 p-6 mb-8 relative overflow-hidden bg-gray-900 rounded-xl text-white shadow-xl"
           >
             <div className="absolute inset-0 bg-spectrum-gradient opacity-20"></div>
@@ -651,7 +770,7 @@ const Results: React.FC = () => {
                 <div 
                   className="absolute top-0 bottom-0 w-4 h-4 rounded-full border-2 border-white shadow-glow transition-all duration-500"
                   style={{ 
-                    left: `${(stateBreakdown.findIndex(s => s.name === dominantState.name) / Math.max(stateBreakdown.length - 1, 1)) * 100}%`, 
+                    left: `${(allStates.findIndex(s => s.name === dominantState.name) / Math.max(allStates.length - 1, 1)) * 85}%`, 
                     transform: 'translateX(-50%)',
                     backgroundColor: dominantState.color
                   }}
@@ -659,7 +778,7 @@ const Results: React.FC = () => {
                 <div 
                   className="absolute -bottom-6 text-xs font-medium text-white"
                   style={{ 
-                    left: `${(stateBreakdown.findIndex(s => s.name === dominantState.name) / Math.max(stateBreakdown.length - 1, 1)) * 100}%`, 
+                    left: `${(allStates.findIndex(s => s.name === dominantState.name) / Math.max(allStates.length - 1, 1)) * 85}%`, 
                     transform: 'translateX(-50%)' 
                   }}
                 >
@@ -678,7 +797,7 @@ const Results: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 1.3 }}
+            transition={{ duration: 0.5, delay: 1.4 }}
             className="mt-12 rounded-xl p-8 text-center relative overflow-hidden"
             style={{ 
               background: `linear-gradient(135deg, ${dominantState.color}15, ${dominantState.color}30)`,
