@@ -87,12 +87,6 @@ const AIInsight: React.FC<{ state: HarmonicState, firstName: string }> = ({ stat
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.7 }}
-    // Generate dynamic insights for PDF and display
-    const dynamicInsights = generateDynamicInsights(
-      calculatedStateScores,
-      responsesData || [],
-      questionsData || []
-    );
       className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 border border-gray-200 shadow-md relative overflow-hidden"
     >
       <div 
@@ -393,8 +387,7 @@ const Results: React.FC = () => {
     } : undefined,
     totalScore: assessment.results?.[dominantState.id] || 0,
     completionDate: assessment.created_at,
-    aiInsight: dynamicInsights.join(' '),
-    stateScores: stateScores
+    aiInsight: dynamicInsights.join(' ')
   };
 
   return (
