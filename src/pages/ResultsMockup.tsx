@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
-import { Brain, ChevronRight, Download, Share2, Sparkles, Info, BarChart3 } from 'lucide-react';
+import { Brain, ChevronRight, Download, Share2, Sparkles, Info, BarChart3, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getHarmonicStateTextColor } from '../lib/utils';
 
 // Sample data for mockup
 const mockState = {
@@ -18,6 +19,21 @@ const mockUser = {
   lastName: "Sample"
 };
 
+// Sample questions data matching the actual results structure
+const mockQuestions = [
+  { id: "q1", question_text: "I naturally generate new ideas and creative solutions.", score: 6, harmonic_state: mockState.id },
+  { id: "q2", question_text: "I can transform concepts into tangible reality.", score: 7, harmonic_state: mockState.id },
+  { id: "q3", question_text: "I feel energized when bringing something new into existence.", score: 7, harmonic_state: mockState.id },
+  { id: "q4", question_text: "I have a natural capacity for innovative thinking.", score: 6, harmonic_state: mockState.id },
+  { id: "q5", question_text: "I enjoy turning imagination into practical action.", score: 7, harmonic_state: mockState.id },
+  { id: "q6", question_text: "I can see possibilities that others might miss.", score: 6, harmonic_state: mockState.id },
+  { id: "q7", question_text: "I feel most alive when creating something original.", score: 7, harmonic_state: mockState.id },
+];
+
+const mockResults = {
+  [mockState.id]: 46 // Total score for Creative Power
+};
+
 // Helper function to convert hex to rgb
 function hexToRgb(hex: string) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -25,70 +41,6 @@ function hexToRgb(hex: string) {
     `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` :
     '79, 70, 229'; // Default blue if parsing fails
 }
-
-const ResultVisual: React.FC<{ state: typeof mockState }> = ({ state }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
-      className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 p-8 text-center mb-8 relative"
-      style={{ 
-        boxShadow: `0 10px 25px -5px rgba(${hexToRgb(state.color)}, 0.2), 0 10px 10px -5px rgba(${hexToRgb(state.color)}, 0.1)` 
-      }}
-    >
-      <div className="absolute inset-0 bg-gradient-radial from-white to-gray-50 opacity-50"></div>
-      <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: state.color }}></div>
-      
-      <div className="relative z-10">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ 
-            type: "spring",
-            stiffness: 260,
-            damping: 20,
-            delay: 0.3 
-          }}
-          className="w-28 h-28 rounded-full mx-auto mb-6 flex items-center justify-center shadow-xl"
-          style={{ 
-            backgroundColor: state.color,
-            boxShadow: `0 10px 25px rgba(${hexToRgb(state.color)}, 0.3)` 
-          }}
-        >
-          <Brain className="h-14 w-14 text-white" />
-        </motion.div>
-        
-        <motion.h3 
-          className="text-3xl font-bold mb-4"
-          style={{ color: state.color }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          {state.name}
-        </motion.h3>
-        
-        <motion.div
-          className="h-2 w-3/4 max-w-md mx-auto rounded-full mb-8 shadow-sm"
-          style={{ backgroundColor: state.color }}
-          initial={{ width: "0%" }}
-          animate={{ width: "75%" }}
-          transition={{ duration: 1, delay: 0.5 }}
-        ></motion.div>
-        
-        <motion.p 
-          className="text-gray-600 leading-relaxed max-w-2xl mx-auto text-lg"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-        >
-          {state.description}
-        </motion.p>
-      </div>
-    </motion.div>
-  );
-};
 
 const AIInsight: React.FC<{ state: typeof mockState, firstName: string }> = ({ state, firstName }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -198,13 +150,13 @@ const ResultsMockup: React.FC = () => {
       
       {/* Main content */}
       <main className="container mx-auto px-4 py-12 relative z-10">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <motion.h1
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="text-3xl sm:text-4xl font-bold text-gray-900 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600"
+              className="text-3xl sm:text-4xl font-bold text-gray-900"
             >
               Your Emotional Dynamics Results
             </motion.h1>
@@ -214,12 +166,42 @@ const ResultsMockup: React.FC = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="mt-4 text-gray-600"
             >
-              Hi {mockUser.firstName}, your dominant harmonic state is:
+              Hi {mockUser.firstName}, here are your assessment results:
             </motion.p>
           </div>
           
-          {/* Dominant State Visualization */}
-          <ResultVisual state={mockState} />
+          {/* Dominant State Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-white rounded-xl shadow-lg p-8 mb-8 text-center relative overflow-hidden"
+            style={{ 
+              boxShadow: `0 10px 25px -5px rgba(${hexToRgb(mockState.color)}, 0.2), 0 10px 10px -5px rgba(${hexToRgb(mockState.color)}, 0.1)` 
+            }}
+          >
+            <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: mockState.color }}></div>
+            
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Dominant Harmonic State</h2>
+              <div 
+                className="inline-flex items-center justify-center w-24 h-24 rounded-full text-white font-bold text-2xl shadow-lg mx-auto"
+                style={{ 
+                  backgroundColor: mockState.color,
+                  color: getHarmonicStateTextColor(mockState.color),
+                  border: mockState.color === '#FFFFFF' ? '2px solid #E5E7EB' : 'none'
+                }}
+              >
+                {mockResults[mockState.id]}
+              </div>
+              <h3 className="text-3xl font-bold mt-4 mb-4" style={{ color: mockState.color }}>
+                {mockState.name}
+              </h3>
+              <p className="text-gray-600 leading-relaxed max-w-2xl mx-auto">
+                {mockState.description}
+              </p>
+            </div>
+          </motion.div>
           
           {/* AI Insight */}
           <AIInsight 
@@ -227,11 +209,105 @@ const ResultsMockup: React.FC = () => {
             firstName={mockUser.firstName}
           />
           
-          {/* Additional insights section */}
+          {/* Question Breakdown */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.8 }}
+            className="mt-8 bg-white rounded-xl shadow-md overflow-hidden"
+          >
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-bold text-gray-900">Question Breakdown</h3>
+              <p className="text-sm text-gray-600">Your responses for {mockState.name} questions</p>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      #
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Question
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Score
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      State
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {mockQuestions.map((question, index) => (
+                    <tr key={question.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {92 + index}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-900 max-w-md">
+                          {question.question_text}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div 
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-sm"
+                          style={{ 
+                            backgroundColor: mockState.color,
+                            color: mockState.color === '#FFFFFF' ? '#1F2937' : getHarmonicStateTextColor(mockState.color),
+                            border: mockState.color === '#FFFFFF' ? '2px solid #E5E7EB' : 'none'
+                          }}
+                        >
+                          {question.score}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div 
+                            className="w-3 h-3 rounded-full mr-2"
+                            style={{ 
+                              backgroundColor: mockState.color,
+                              border: mockState.color === '#FFFFFF' ? '1px solid #E5E7EB' : 'none'
+                            }}
+                          ></div>
+                          <span className="text-sm text-gray-900">{mockState.name}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+          
+          {/* Coaching Tips */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.9 }}
+            className="mt-8 bg-white rounded-xl shadow-md p-6 relative overflow-hidden"
+          >
+            <div 
+              className="absolute top-0 left-0 w-full h-1" 
+              style={{ backgroundColor: mockState.color }}
+            ></div>
+            
+            <h3 className="text-lg font-bold pl-3 mb-4" style={{ color: mockState.color }}>
+              Coaching Recommendations
+            </h3>
+            <div className="pl-3">
+              <p className="text-gray-700 leading-relaxed">
+                {mockState.coaching_tips}
+              </p>
+            </div>
+          </motion.div>
+          
+          {/* Understanding Your State */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 1.0 }}
             className="mt-8 bg-white rounded-xl shadow-md p-6 mb-8 relative overflow-hidden"
           >
             <div 
@@ -239,13 +315,17 @@ const ResultsMockup: React.FC = () => {
               style={{ backgroundColor: mockState.color }}
             ></div>
             
-            <h3 className="text-lg font-bold pl-3 mb-4" style={{ color: mockState.color }}>Understanding Your Dominant State</h3>
-            <div className="grid gap-4 md:grid-cols-2">
+            <h3 className="text-lg font-bold pl-3 mb-4" style={{ color: mockState.color }}>
+              Understanding Your Dominant State
+            </h3>
+            <div className="grid gap-4 md:grid-cols-2 pl-3">
               <div 
                 className="bg-white border border-gray-100 p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 transform hover:-translate-y-1" 
                 style={{ borderLeftColor: mockState.color, borderLeftWidth: '3px' }}
               >
-                <h4 className="font-bold text-gray-800 mb-3" style={{ color: mockState.color }}>Strengths of {mockState.name}</h4>
+                <h4 className="font-bold text-gray-800 mb-3" style={{ color: mockState.color }}>
+                  Strengths of {mockState.name}
+                </h4>
                 <ul className="space-y-3 text-gray-700">
                   <li className="flex items-start">
                     <span className="mr-2 text-xl" style={{ color: mockState.color }}>•</span>
@@ -265,7 +345,9 @@ const ResultsMockup: React.FC = () => {
                 className="bg-white border border-gray-100 p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 transform hover:-translate-y-1" 
                 style={{ borderLeftColor: mockState.color, borderLeftWidth: '3px' }}
               >
-                <h4 className="font-bold text-gray-800 mb-3" style={{ color: mockState.color }}>Growth Opportunities</h4>
+                <h4 className="font-bold text-gray-800 mb-3" style={{ color: mockState.color }}>
+                  Growth Opportunities
+                </h4>
                 <ul className="space-y-3 text-gray-700">
                   <li className="flex items-start">
                     <span className="mr-2 text-xl" style={{ color: mockState.color }}>•</span>
@@ -288,7 +370,7 @@ const ResultsMockup: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.9 }}
+            transition={{ duration: 0.5, delay: 1.1 }}
             className="mt-8 p-6 mb-8 relative overflow-hidden bg-gray-900 rounded-xl text-white shadow-xl"
           >
             <div className="absolute inset-0 bg-spectrum-gradient opacity-20"></div>
@@ -336,7 +418,7 @@ const ResultsMockup: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 1.0 }}
+            transition={{ duration: 0.5, delay: 1.2 }}
             className="mt-12 rounded-xl p-8 text-center relative overflow-hidden"
             style={{ 
               background: `linear-gradient(135deg, ${mockState.color}15, ${mockState.color}30)`,
