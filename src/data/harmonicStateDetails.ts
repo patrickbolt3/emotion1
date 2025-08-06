@@ -43,7 +43,7 @@ export const harmonicStateDetails: Record<string, HarmonicStateDetails> = {
       "May not initiate conversation even when in distress"
     ],
     coachingNotes: [
-      "Focus on micro-movements, body awareness, and simple sensory engagement",
+      "Focus on micro-movements, body awareness, and simple sensory engagement (e.g., \"notice your breath, the floor under your feet\")",
       "Do not try to \"motivate\" directly—first build safety and attunement",
       "Use presence over pressure; allow silence and space",
       "Progress = any spark of interest or acknowledgment of life"
@@ -72,7 +72,7 @@ export const harmonicStateDetails: Record<string, HarmonicStateDetails> = {
     responsibility: [
       "Feels powerless to influence anything",
       "Projects responsibility outward or collapses under the idea of having any",
-      "Begin by helping client regain choice in tiny ways"
+      "Begin by helping client regain choice in tiny ways (e.g., picking which chair to sit in)"
     ],
     help: [
       "May refuse help outright or accept it passively with no engagement",
@@ -945,6 +945,27 @@ export const harmonicStateDetails: Record<string, HarmonicStateDetails> = {
   }
 };
 
+// Helper function to get state details by ID
+export const getStateDetailsById = (stateId: string): HarmonicStateDetails | null => {
+  // Map database IDs to our detail keys
+  const stateMap: Record<string, string> = {
+    // Add mappings as needed based on your database state IDs
+  };
+  
+  // First try direct lookup
+  if (harmonicStateDetails[stateId]) {
+    return harmonicStateDetails[stateId];
+  }
+  
+  // Then try mapped lookup
+  const mappedKey = stateMap[stateId];
+  if (mappedKey && harmonicStateDetails[mappedKey]) {
+    return harmonicStateDetails[mappedKey];
+  }
+  
+  return null;
+};
+
 // Helper function to get state details by name (case-insensitive)
 export const getStateDetailsByName = (stateName: string): HarmonicStateDetails | null => {
   const normalizedName = stateName.toLowerCase().replace(/\s+/g, '');
@@ -964,7 +985,7 @@ export const getStateDetailsByName = (stateName: string): HarmonicStateDetails |
     'exhilaration': 'exhilaration',
     'action': 'action',
     'creativepower': 'creativePower',
-    'pureAwareness': 'pureAwareness'
+    'pureawareness': 'pureAwareness'
   };
   
   const key = nameMap[normalizedName];
