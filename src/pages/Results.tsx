@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 import PDFGenerator from '../components/PDFGenerator';
+import { getStateDetailsByName, type HarmonicStateDetails } from '../data/harmonicStateDetails';
 import { Brain, ChevronRight, Share2, Sparkles, Info, BarChart3, ArrowLeft, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getHarmonicStateTextColor } from '../lib/utils';
@@ -140,6 +141,7 @@ const Results: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [responses, setResponses] = useState<Response[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [stateDetails, setStateDetails] = useState<HarmonicStateDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -190,6 +192,10 @@ const Results: React.FC = () => {
           const dominantStateData = statesData?.find(s => s.id === assessmentData.dominant_state);
           if (dominantStateData) {
             setDominantState(dominantStateData);
+            
+            // Get comprehensive state details
+            const comprehensiveDetails = getStateDetailsByName(dominantStateData.name);
+            setStateDetails(comprehensiveDetails);
           }
         }
 
@@ -483,71 +489,240 @@ const Results: React.FC = () => {
             </div>
           </motion.div>
           
-          {/* All Harmonic State Scores */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
-            className="mt-8 bg-white rounded-xl shadow-md overflow-hidden"
-          >
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900">Complete Harmonic State Breakdown</h3>
-              <p className="text-sm text-gray-600">Your scores across all 14 emotional states</p>
-            </div>
-            
-            <div className="p-6">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {stateScores.map((stateScore, index) => (
-                  <motion.div
-                    key={stateScore.state.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    className={`bg-white border-2 rounded-xl p-6 text-center hover:shadow-lg transition-all duration-300 ${
-                      stateScore.state.id === dominantState?.id 
-                        ? 'ring-2 ring-offset-2 transform scale-105' 
-                        : 'hover:scale-105'
-                    }`}
-                    style={{ 
-                      borderColor: stateScore.state.id === dominantState?.id ? stateScore.state.color : '#E5E7EB',
-                      ringColor: stateScore.state.id === dominantState?.id ? stateScore.state.color : undefined
-                    }}
-                  >
-                    <div 
-                      className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-3 shadow-md"
-                      style={{ 
-                        backgroundColor: stateScore.state.color,
-                        color: getHarmonicStateTextColor(stateScore.state.color),
-                        border: stateScore.state.color === '#FFFFFF' ? '2px solid #E5E7EB' : 'none'
-                      }}
-                    >
-                      {stateScore.score}
-                    </div>
-                    
-                    <h4 className="font-bold text-gray-900 mb-2" style={{ 
-                      color: stateScore.state.id === dominantState?.id ? stateScore.state.color : undefined 
-                    }}>
-                      {stateScore.state.name}
-                    </h4>
-                    
-                    <div className="text-xs text-gray-500 space-y-1">
-                      <div>{stateScore.percentage.toFixed(1)}% of total</div>
-                      <div>{stateScore.questionCount} questions</div>
-                      <div>Avg: {stateScore.averageScore.toFixed(1)}/7</div>
-                    </div>
-                    
-                    {stateScore.state.id === dominantState?.id && (
-                      <div className="mt-3 px-2 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-medium rounded-full">
-                        Dominant State
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
+          {/* Comprehensive State Analysis */}
+          {stateDetails && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+              className="mt-8 bg-white rounded-xl shadow-md overflow-hidden"
+            >
+              {/* Theme Header */}
+              <div 
+                className="px-6 py-4 text-white relative overflow-hidden"
+                style={{ backgroundColor: dominantState.color }}
+              >
+                <div className="relative z-10">
+                  <h3 className="text-xl font-bold" style={{ color: getHarmonicStateTextColor(dominantState.color) }}>
+                    Understanding Your {dominantState.name}
+                  </h3>
+                  <p className="text-sm opacity-90 mt-1" style={{ color: getHarmonicStateTextColor(dominantState.color) }}>
+                    {stateDetails.theme}
+                  </p>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/10"></div>
               </div>
-            </div>
-          </motion.div>
+              
+              {/* 12 Detailed Aspects Grid */}
+              <div className="p-6">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {/* Core Beliefs */}
+                  <div className="bg-gray-50 rounded-lg p-4 border-l-4" style={{ borderLeftColor: dominantState.color }}>
+                    <h4 className="font-bold text-gray-900 mb-3 flex items-center">
+                      <span className="text-lg mr-2">💭</span>
+                      Core Beliefs
+                    </h4>
+                    <ul className="space-y-2">
+                      {stateDetails.coreBeliefs.map((belief, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="mr-2 text-sm" style={{ color: dominantState.color }}>•</span>
+                          <span className="text-sm text-gray-700 leading-relaxed">"{belief}"</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Behavior Patterns */}
+                  <div className="bg-gray-50 rounded-lg p-4 border-l-4" style={{ borderLeftColor: dominantState.color }}>
+                    <h4 className="font-bold text-gray-900 mb-3 flex items-center">
+                      <span className="text-lg mr-2">🎭</span>
+                      Behavior Patterns
+                    </h4>
+                    <ul className="space-y-2">
+                      {stateDetails.behaviorPatterns.map((pattern, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="mr-2 text-sm" style={{ color: dominantState.color }}>•</span>
+                          <span className="text-sm text-gray-700 leading-relaxed">{pattern}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Communication Patterns */}
+                  <div className="bg-gray-50 rounded-lg p-4 border-l-4" style={{ borderLeftColor: dominantState.color }}>
+                    <h4 className="font-bold text-gray-900 mb-3 flex items-center">
+                      <span className="text-lg mr-2">💬</span>
+                      Communication
+                    </h4>
+                    <ul className="space-y-2">
+                      {stateDetails.communicationPatterns.map((pattern, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="mr-2 text-sm" style={{ color: dominantState.color }}>•</span>
+                          <span className="text-sm text-gray-700 leading-relaxed">{pattern}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Coaching Notes */}
+                  <div className="bg-gray-50 rounded-lg p-4 border-l-4" style={{ borderLeftColor: dominantState.color }}>
+                    <h4 className="font-bold text-gray-900 mb-3 flex items-center">
+                      <span className="text-lg mr-2">🎯</span>
+                      Coaching Notes
+                    </h4>
+                    <ul className="space-y-2">
+                      {stateDetails.coachingNotes.map((note, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="mr-2 text-sm" style={{ color: dominantState.color }}>•</span>
+                          <span className="text-sm text-gray-700 leading-relaxed">{note}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Connection */}
+                  <div className="bg-gray-50 rounded-lg p-4 border-l-4" style={{ borderLeftColor: dominantState.color }}>
+                    <h4 className="font-bold text-gray-900 mb-3 flex items-center">
+                      <span className="text-lg mr-2">🤝</span>
+                      Connection
+                    </h4>
+                    <ul className="space-y-2">
+                      {stateDetails.connection.map((item, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="mr-2 text-sm" style={{ color: dominantState.color }}>•</span>
+                          <span className="text-sm text-gray-700 leading-relaxed">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Reality */}
+                  <div className="bg-gray-50 rounded-lg p-4 border-l-4" style={{ borderLeftColor: dominantState.color }}>
+                    <h4 className="font-bold text-gray-900 mb-3 flex items-center">
+                      <span className="text-lg mr-2">🌍</span>
+                      Reality
+                    </h4>
+                    <ul className="space-y-2">
+                      {stateDetails.reality.map((item, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="mr-2 text-sm" style={{ color: dominantState.color }}>•</span>
+                          <span className="text-sm text-gray-700 leading-relaxed">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Understanding */}
+                  <div className="bg-gray-50 rounded-lg p-4 border-l-4" style={{ borderLeftColor: dominantState.color }}>
+                    <h4 className="font-bold text-gray-900 mb-3 flex items-center">
+                      <span className="text-lg mr-2">🧠</span>
+                      Understanding
+                    </h4>
+                    <ul className="space-y-2">
+                      {stateDetails.understanding.map((item, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="mr-2 text-sm" style={{ color: dominantState.color }}>•</span>
+                          <span className="text-sm text-gray-700 leading-relaxed">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Change */}
+                  <div className="bg-gray-50 rounded-lg p-4 border-l-4" style={{ borderLeftColor: dominantState.color }}>
+                    <h4 className="font-bold text-gray-900 mb-3 flex items-center">
+                      <span className="text-lg mr-2">🔄</span>
+                      Change
+                    </h4>
+                    <ul className="space-y-2">
+                      {stateDetails.change.map((item, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="mr-2 text-sm" style={{ color: dominantState.color }}>•</span>
+                          <span className="text-sm text-gray-700 leading-relaxed">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Responsibility */}
+                  <div className="bg-gray-50 rounded-lg p-4 border-l-4" style={{ borderLeftColor: dominantState.color }}>
+                    <h4 className="font-bold text-gray-900 mb-3 flex items-center">
+                      <span className="text-lg mr-2">⚖️</span>
+                      Responsibility
+                    </h4>
+                    <ul className="space-y-2">
+                      {stateDetails.responsibility.map((item, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="mr-2 text-sm" style={{ color: dominantState.color }}>•</span>
+                          <span className="text-sm text-gray-700 leading-relaxed">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Help */}
+                  <div className="bg-gray-50 rounded-lg p-4 border-l-4" style={{ borderLeftColor: dominantState.color }}>
+                    <h4 className="font-bold text-gray-900 mb-3 flex items-center">
+                      <span className="text-lg mr-2">🤲</span>
+                      Help
+                    </h4>
+                    <ul className="space-y-2">
+                      {stateDetails.help.map((item, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="mr-2 text-sm" style={{ color: dominantState.color }}>•</span>
+                          <span className="text-sm text-gray-700 leading-relaxed">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Work */}
+                  <div className="bg-gray-50 rounded-lg p-4 border-l-4" style={{ borderLeftColor: dominantState.color }}>
+                    <h4 className="font-bold text-gray-900 mb-3 flex items-center">
+                      <span className="text-lg mr-2">💼</span>
+                      Work
+                    </h4>
+                    <ul className="space-y-2">
+                      {stateDetails.work.map((item, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="mr-2 text-sm" style={{ color: dominantState.color }}>•</span>
+                          <span className="text-sm text-gray-700 leading-relaxed">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+                
+                {/* Emotional Driver - Full Width */}
+                <div className="mt-6 bg-gradient-to-r from-gray-900 to-gray-800 rounded-lg p-6 text-white relative overflow-hidden">
+                  <div 
+                    className="absolute top-0 left-0 w-full h-1" 
+                    style={{ backgroundColor: dominantState.color }}
+                  ></div>
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0">
+                      <div 
+                        className="w-12 h-12 rounded-full flex items-center justify-center shadow-md"
+                        style={{ backgroundColor: dominantState.color }}
+                      >
+                        <span className="text-lg">⚡</span>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-white mb-2 text-lg">
+                        Emotional Driver: {stateDetails.emotionalDriver.title}
+                      </h4>
+                      <p className="text-gray-300 leading-relaxed">
+                        {stateDetails.emotionalDriver.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
           
-          {/* Dynamic AI Insights */}
+          {/* Personalized Insights */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -591,167 +766,11 @@ const Results: React.FC = () => {
             </div>
           </motion.div>
           
-          {/* Question Breakdown */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 1.0 }}
-            className="mt-8 bg-white rounded-xl shadow-md overflow-hidden"
-          >
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-bold text-gray-900">Question Breakdown</h3>
-              <p className="text-sm text-gray-600">Your responses across all harmonic states</p>
-            </div>
-            
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      #
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Question
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Score
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      State
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {questions.map((question, index) => {
-                    const response = responses.find(r => r.question_id === question.id);
-                    const questionState = allStates.find(s => s.id === question.harmonic_state);
-                    
-                    if (!response) return null;
-                    
-                    return (
-                      <tr key={question.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {question.order}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-gray-900 max-w-md">
-                            {question.question_text}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div 
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-sm"
-                            style={{ 
-                              backgroundColor: questionState?.color || '#6B7280',
-                              color: questionState ? getHarmonicStateTextColor(questionState.color) : '#FFFFFF',
-                              border: questionState?.color === '#FFFFFF' ? '2px solid #E5E7EB' : 'none'
-                            }}
-                          >
-                            {response.score}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div 
-                              className="w-3 h-3 rounded-full mr-2"
-                              style={{ 
-                                backgroundColor: questionState?.color || '#6B7280',
-                                border: questionState?.color === '#FFFFFF' ? '1px solid #E5E7EB' : 'none'
-                              }}
-                            ></div>
-                            <span className="text-sm text-gray-900">{questionState?.name || 'Unknown'}</span>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
-          
-          {/* Coaching Tips */}
-          {dominantState.coaching_tips && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 1.1 }}
-              className="mt-8 bg-white rounded-xl shadow-md p-6 relative overflow-hidden"
-            >
-              <div 
-                className="absolute top-0 left-0 w-full h-1" 
-                style={{ backgroundColor: dominantState.color }}
-              ></div>
-              
-              <h3 className="text-lg font-bold pl-3 mb-4" style={{ color: dominantState.color }}>
-                Coaching Recommendations
-              </h3>
-              <div className="pl-3">
-                <p className="text-gray-700 leading-relaxed">
-                  {dominantState.coaching_tips}
-                </p>
-              </div>
-            </motion.div>
-          )}
-          
-          {/* Top 3 States Analysis */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 1.2 }}
-            className="mt-8 bg-white rounded-xl shadow-md p-6 mb-8 relative overflow-hidden"
-          >
-            <div 
-              className="absolute top-0 left-0 w-full h-1" 
-              style={{ backgroundColor: dominantState.color }}
-            ></div>
-            
-            <h3 className="text-lg font-bold pl-3 mb-6" style={{ color: dominantState.color }}>
-              Your Top Emotional Patterns
-            </h3>
-            
-            <div className="pl-3 space-y-4">
-              {stateScores.slice(0, 3).map((stateScore, index) => (
-                <div 
-                  key={stateScore.state.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border-l-4"
-                  style={{ borderLeftColor: stateScore.state.color }}
-                >
-                  <div className="flex items-center space-x-4">
-                    <div 
-                      className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-sm"
-                      style={{ 
-                        backgroundColor: stateScore.state.color,
-                        color: getHarmonicStateTextColor(stateScore.state.color),
-                        border: stateScore.state.color === '#FFFFFF' ? '2px solid #E5E7EB' : 'none'
-                      }}
-                    >
-                      {stateScore.score}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-gray-900">{stateScore.state.name}</h4>
-                      <p className="text-sm text-gray-600">{stateScore.percentage.toFixed(1)}% of your responses</p>
-                    </div>
-                  </div>
-                  <div className="text-right text-sm text-gray-500">
-                    <div>{stateScore.questionCount} questions</div>
-                    <div>Avg: {stateScore.averageScore.toFixed(1)}/7</div>
-                  </div>
-                  {index === 0 && (
-                    <div className="ml-4 px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-medium rounded-full">
-                      Primary
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </motion.div>
-          
           {/* Harmonic scale context */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 1.3 }}
+            transition={{ duration: 0.5, delay: 1.0 }}
             className="mt-8 p-6 mb-8 relative overflow-hidden bg-gray-900 rounded-xl text-white shadow-xl"
           >
             <div className="absolute inset-0 bg-spectrum-gradient opacity-20"></div>
@@ -797,7 +816,7 @@ const Results: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 1.4 }}
+            transition={{ duration: 0.5, delay: 1.1 }}
             className="mt-12 rounded-xl p-8 text-center relative overflow-hidden"
             style={{ 
               background: `linear-gradient(135deg, ${dominantState.color}15, ${dominantState.color}30)`,
