@@ -132,6 +132,12 @@ const ResultsMockup: React.FC = () => {
             <span className="ml-2 font-semibold text-gray-900">Emotional Dynamics Indicator™</span>
           </Link>
           <div className="flex space-x-2">
+            <Link to="/">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Home
+              </Button>
+            </Link>
             <div className="text-sm text-blue-600 font-medium mr-4 bg-blue-50 px-3 py-1 rounded-full flex items-center">
               <Info className="h-3.5 w-3.5 mr-1" />
               Sample Results
