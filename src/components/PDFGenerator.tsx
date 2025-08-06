@@ -17,20 +17,26 @@ interface PDFGeneratorProps {
       color: string;
       coaching_tips?: string;
     };
+    stateDetails?: {
+      theme: string;
+      coreBeliefs: string[];
+      behaviorPatterns: string[];
+      communicationPatterns: string[];
+      coachingNotes: string[];
+      connection: string[];
+      reality: string[];
+      understanding: string[];
+      change: string[];
+      responsibility: string[];
+      help: string[];
+      work: string[];
+      emotionalDriver: {
+        title: string;
+        description: string;
+      };
+    };
     totalScore: number;
     completionDate: string;
-    responses: Array<{
-      question: string;
-      score: number;
-      state: string;
-      stateColor: string;
-    }>;
-    stateBreakdown: Array<{
-      name: string;
-      score: number;
-      color: string;
-      percentage: number;
-    }>;
     aiInsight?: string;
   };
   variant?: 'default' | 'outline' | 'ghost';
@@ -165,7 +171,124 @@ const PDFGenerator: React.FC<PDFGeneratorProps> = ({
       );
       yPosition += descriptionHeight + 10;
 
-      // AI Insight Section
+      // Comprehensive State Analysis Section
+      if (assessmentData.stateDetails) {
+        checkPageBreak(40);
+        
+        // Theme section
+        pdf.setFillColor(r, g, b);
+        pdf.rect(margin, yPosition - 5, contentWidth, 15, 'F');
+        
+        pdf.setTextColor(luminance > 0.5 ? 0 : 255, luminance > 0.5 ? 0 : 255, luminance > 0.5 ? 0 : 255);
+        pdf.setFontSize(16);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`Understanding Your ${assessmentData.dominantState.name}`, margin + 5, yPosition + 5);
+        yPosition += 20;
+
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFontSize(12);
+        pdf.setFont('helvetica', 'italic');
+        const themeHeight = addWrappedText(
+          `Theme: ${assessmentData.stateDetails.theme}`,
+          margin,
+          yPosition,
+          contentWidth,
+          12
+        );
+        yPosition += themeHeight + 15;
+
+        // 12 detailed aspects
+        const aspects = [
+          { title: '💭 Core Beliefs', items: assessmentData.stateDetails.coreBeliefs },
+          { title: '🎭 Behavior Patterns', items: assessmentData.stateDetails.behaviorPatterns },
+          { title: '💬 Communication Patterns', items: assessmentData.stateDetails.communicationPatterns },
+          { title: '🎯 Coaching Notes', items: assessmentData.stateDetails.coachingNotes },
+          { title: '🤝 Connection', items: assessmentData.stateDetails.connection },
+          { title: '🌍 Reality', items: assessmentData.stateDetails.reality },
+          { title: '🧠 Understanding', items: assessmentData.stateDetails.understanding },
+          { title: '🔄 Change', items: assessmentData.stateDetails.change },
+          { title: '⚖️ Responsibility', items: assessmentData.stateDetails.responsibility },
+          { title: '🤲 Help', items: assessmentData.stateDetails.help },
+          { title: '💼 Work', items: assessmentData.stateDetails.work }
+        ];
+
+        aspects.forEach((aspect, aspectIndex) => {
+          checkPageBreak(25);
+          
+          // Section header
+          pdf.setFillColor(240, 240, 240); // Light gray
+          pdf.rect(margin, yPosition - 3, contentWidth, 10, 'F');
+          
+          pdf.setTextColor(0, 0, 0);
+          pdf.setFontSize(12);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(aspect.title, margin + 3, yPosition + 3);
+          yPosition += 12;
+
+          // Items
+          pdf.setFontSize(10);
+          pdf.setFont('helvetica', 'normal');
+          
+          aspect.items.forEach((item, itemIndex) => {
+            checkPageBreak(8);
+            
+            // Bullet point
+            pdf.setFillColor(r, g, b);
+            pdf.circle(margin + 3, yPosition - 1, 1, 'F');
+            
+            // Item text
+            const itemHeight = addWrappedText(
+              item,
+              margin + 8,
+              yPosition,
+              contentWidth - 15,
+              10
+            );
+            yPosition += Math.max(itemHeight, 5) + 2;
+          });
+          
+          yPosition += 5; // Space between sections
+        });
+
+        // Emotional Driver - Special section
+        if (assessmentData.stateDetails.emotionalDriver) {
+          checkPageBreak(25);
+          
+          pdf.setFillColor(50, 50, 50); // Dark gray
+          pdf.rect(margin, yPosition - 5, contentWidth, 15, 'F');
+          
+          pdf.setTextColor(255, 255, 255);
+          pdf.setFontSize(14);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('⚡ Emotional Driver', margin + 5, yPosition + 5);
+          yPosition += 20;
+
+          pdf.setTextColor(0, 0, 0);
+          pdf.setFontSize(12);
+          pdf.setFont('helvetica', 'bold');
+          const driverTitleHeight = addWrappedText(
+            assessmentData.stateDetails.emotionalDriver.title,
+            margin,
+            yPosition,
+            contentWidth,
+            12
+          );
+          yPosition += driverTitleHeight + 5;
+
+          pdf.setFontSize(11);
+          pdf.setFont('helvetica', 'normal');
+          const driverDescHeight = addWrappedText(
+            assessmentData.stateDetails.emotionalDriver.description,
+            margin,
+            yPosition,
+            contentWidth,
+            11
+          );
+          yPosition += driverDescHeight + 10;
+        }
+      }
+
+      // AI Insight Section (if available)
       if (assessmentData.aiInsight) {
         checkPageBreak(30);
         
@@ -175,7 +298,7 @@ const PDFGenerator: React.FC<PDFGeneratorProps> = ({
         pdf.setTextColor(255, 255, 255);
         pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
-        pdf.text('AI Coaching Insight', margin + 5, yPosition + 3);
+        pdf.text('Personalized Insights', margin + 5, yPosition + 3);
         yPosition += 15;
 
         pdf.setTextColor(0, 0, 0);
@@ -190,165 +313,6 @@ const PDFGenerator: React.FC<PDFGeneratorProps> = ({
         );
         yPosition += insightHeight + 15;
       }
-
-      // Coaching Tips Section
-      if (assessmentData.dominantState.coaching_tips) {
-        checkPageBreak(30);
-        
-        pdf.setFillColor(34, 197, 94); // Green
-        pdf.rect(margin, yPosition - 5, contentWidth, 12, 'F');
-        
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFontSize(14);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text('Coaching Recommendations', margin + 5, yPosition + 3);
-        yPosition += 15;
-
-        pdf.setTextColor(0, 0, 0);
-        pdf.setFontSize(11);
-        pdf.setFont('helvetica', 'normal');
-        const tipsHeight = addWrappedText(
-          assessmentData.dominantState.coaching_tips,
-          margin,
-          yPosition,
-          contentWidth,
-          11
-        );
-        yPosition += tipsHeight + 15;
-      }
-
-      // State Breakdown Section
-      checkPageBreak(60);
-      
-      pdf.setFillColor(147, 51, 234); // Purple
-      pdf.rect(margin, yPosition - 5, contentWidth, 12, 'F');
-      
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Harmonic State Breakdown', margin + 5, yPosition + 3);
-      yPosition += 15;
-
-      pdf.setTextColor(0, 0, 0);
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-
-      // Table headers
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('State', margin, yPosition);
-      pdf.text('Score', margin + 80, yPosition);
-      pdf.text('Percentage', margin + 120, yPosition);
-      yPosition += 8;
-
-      // Draw line under headers
-      pdf.setDrawColor(200, 200, 200);
-      pdf.line(margin, yPosition - 2, margin + contentWidth, yPosition - 2);
-      yPosition += 3;
-
-      // State breakdown data
-      pdf.setFont('helvetica', 'normal');
-      assessmentData.stateBreakdown.forEach((state, index) => {
-        if (index > 0 && index % 25 === 0) {
-          checkPageBreak(8);
-        }
-        
-        const [stateR, stateG, stateB] = hexToRgb(state.color);
-        
-        // Color indicator
-        pdf.setFillColor(stateR, stateG, stateB);
-        pdf.circle(margin + 2, yPosition - 1, 1.5, 'F');
-        
-        pdf.setTextColor(0, 0, 0);
-        pdf.text(state.name, margin + 8, yPosition);
-        pdf.text(state.score.toString(), margin + 80, yPosition);
-        pdf.text(`${state.percentage.toFixed(1)}%`, margin + 120, yPosition);
-        yPosition += 6;
-      });
-
-      yPosition += 10;
-
-      // Detailed Question Responses
-      pdf.addPage();
-      yPosition = margin;
-
-      pdf.setFillColor(168, 85, 247); // Purple
-      pdf.rect(margin, yPosition - 5, contentWidth, 12, 'F');
-      
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Detailed Question Responses', margin + 5, yPosition + 3);
-      yPosition += 20;
-
-      pdf.setTextColor(0, 0, 0);
-      pdf.setFontSize(10);
-
-      // Group responses by state for better organization
-      const responsesByState = assessmentData.responses.reduce((acc, response) => {
-        if (!acc[response.state]) {
-          acc[response.state] = [];
-        }
-        acc[response.state].push(response);
-        return acc;
-      }, {} as Record<string, typeof assessmentData.responses>);
-
-      Object.entries(responsesByState).forEach(([stateName, responses]) => {
-        checkPageBreak(20);
-        
-        // State section header
-        const stateColor = responses[0]?.stateColor || '#6B7280';
-        const [stateR, stateG, stateB] = hexToRgb(stateColor);
-        
-        pdf.setFillColor(stateR, stateG, stateB);
-        pdf.rect(margin, yPosition - 3, contentWidth, 8, 'F');
-        
-        const stateLuminance = (0.299 * stateR + 0.587 * stateG + 0.114 * stateB) / 255;
-        pdf.setTextColor(stateLuminance > 0.5 ? 0 : 255, stateLuminance > 0.5 ? 0 : 255, stateLuminance > 0.5 ? 0 : 255);
-        
-        pdf.setFontSize(12);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(`${stateName} Questions`, margin + 3, yPosition + 2);
-        yPosition += 12;
-
-        pdf.setTextColor(0, 0, 0);
-        pdf.setFontSize(9);
-        pdf.setFont('helvetica', 'normal');
-
-        responses.forEach((response, index) => {
-          checkPageBreak(15);
-          
-          // Question number and score
-          pdf.setFont('helvetica', 'bold');
-          pdf.text(`Q${index + 1}:`, margin, yPosition);
-          
-          // Score circle
-          pdf.setFillColor(stateR, stateG, stateB);
-          pdf.circle(margin + contentWidth - 10, yPosition - 1, 3, 'F');
-          pdf.setTextColor(stateLuminance > 0.5 ? 0 : 255, stateLuminance > 0.5 ? 0 : 255, stateLuminance > 0.5 ? 0 : 255);
-          pdf.setFontSize(8);
-          pdf.setFont('helvetica', 'bold');
-          // Center the score text in the circle
-          const scoreText = response.score.toString();
-          const textWidth = pdf.getTextWidth(scoreText);
-          pdf.text(scoreText, margin + contentWidth - 10 - (textWidth / 2), yPosition + 1);
-          
-          pdf.setTextColor(0, 0, 0);
-          pdf.setFontSize(9);
-          pdf.setFont('helvetica', 'normal');
-          
-          // Question text
-          const questionHeight = addWrappedText(
-            response.question,
-            margin + 15,
-            yPosition,
-            contentWidth - 30,
-            9
-          );
-          yPosition += Math.max(questionHeight, 6) + 3;
-        });
-        
-        yPosition += 5;
-      });
 
       // Footer on last page
       const totalPages = pdf.getNumberOfPages();

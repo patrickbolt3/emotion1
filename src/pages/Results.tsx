@@ -356,29 +356,7 @@ const Results: React.FC = () => {
   }
 
   // Calculate state breakdown for PDF
-  const stateBreakdown = stateScores.map(stateScore => ({
-    name: stateScore.state.name,
-    score: stateScore.score,
-    color: stateScore.state.color,
-    percentage: stateScore.percentage
-  }));
-
-  // Prepare detailed responses for PDF
-  const detailedResponses = responses.map(response => {
-    const question = questions.find(q => q.id === response.question_id);
-    const questionState = allStates.find(s => s.id === question?.harmonic_state);
-    
-    return {
-      question: question?.question_text || 'Unknown question',
-      score: response.score,
-      state: questionState?.name || 'Unknown state',
-      stateColor: questionState?.color || '#6B7280'
-    };
-  }).sort((a, b) => {
-    const questionA = questions.find(q => q.question_text === a.question);
-    const questionB = questions.find(q => q.question_text === b.question);
-    return (questionA?.order || 0) - (questionB?.order || 0);
-  });
+  const dynamicInsights = generateDynamicInsights(stateScores, responses, questions);
 
   const pdfData = {
     user: {
@@ -392,11 +370,24 @@ const Results: React.FC = () => {
       color: dominantState.color,
       coaching_tips: dominantState.coaching_tips
     },
+    stateDetails: stateDetails ? {
+      theme: stateDetails.theme,
+      coreBeliefs: stateDetails.coreBeliefs,
+      behaviorPatterns: stateDetails.behaviorPatterns,
+      communicationPatterns: stateDetails.communicationPatterns,
+      coachingNotes: stateDetails.coachingNotes,
+      connection: stateDetails.connection,
+      reality: stateDetails.reality,
+      understanding: stateDetails.understanding,
+      change: stateDetails.change,
+      responsibility: stateDetails.responsibility,
+      help: stateDetails.help,
+      work: stateDetails.work,
+      emotionalDriver: stateDetails.emotionalDriver
+    } : undefined,
     totalScore: assessment.results?.[dominantState.id] || 0,
     completionDate: assessment.created_at,
-    responses: detailedResponses,
-    stateBreakdown,
-    aiInsight: generateDynamicInsights(stateScores, responses, questions).join(' ')
+    aiInsight: dynamicInsights.join(' ')
   };
 
   const dynamicInsights = generateDynamicInsights(stateScores, responses, questions);
