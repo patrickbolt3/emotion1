@@ -327,7 +327,10 @@ const PDFGenerator: React.FC<PDFGeneratorProps> = ({
           pdf.setTextColor(stateLuminance > 0.5 ? 0 : 255, stateLuminance > 0.5 ? 0 : 255, stateLuminance > 0.5 ? 0 : 255);
           pdf.setFontSize(8);
           pdf.setFont('helvetica', 'bold');
-          pdf.text(response.score.toString(), margin + contentWidth - 12, yPosition + 1);
+          // Center the score text in the circle
+          const scoreText = response.score.toString();
+          const textWidth = pdf.getTextWidth(scoreText);
+          pdf.text(scoreText, margin + contentWidth - 10 - (textWidth / 2), yPosition + 1);
           
           pdf.setTextColor(0, 0, 0);
           pdf.setFontSize(9);
