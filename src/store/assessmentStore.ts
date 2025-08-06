@@ -79,12 +79,22 @@ export const useAssessmentStore = create<AssessmentState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('questions')
-        .select('*')
-        .order('order', { ascending: true });
+        .select('*');
       
       if (error) throw error;
       
-      set({ questions: data || [] });
+      // Shuffle questions using Fisher-Yates algorithm
+      const shuffleArray = (array: any[]) => {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+      };
+      
+      const shuffledQuestions = shuffleArray(data || []);
+      set({ questions: shuffledQuestions });
     } catch (error: any) {
       set({ error: error.message });
     } finally {
