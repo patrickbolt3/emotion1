@@ -248,7 +248,11 @@ const Assessment: React.FC = () => {
       {/* Header */}
       <header className="bg-white shadow-sm py-4 sticky top-0 z-40">
         <div className="container mx-auto px-4 flex items-center justify-between">
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
             <Brain className="h-6 w-6" style={{ color: activeColor }} />
             <span className="ml-2 font-semibold text-gray-900">Emotional Dynamics Indicator™</span>
           </div>
