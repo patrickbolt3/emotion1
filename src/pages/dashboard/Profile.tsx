@@ -10,6 +10,8 @@ interface Profile {
   last_name: string | null;
   email: string;
   role: string;
+  coach_id: string | null;
+  coach_name?: string | null;
 }
 
 const Profile: React.FC = () => {
@@ -30,7 +32,17 @@ const Profile: React.FC = () => {
         // Get user profile
         const { data, error: profileError } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name, role')
+          .select(`
+            id, 
+            first_name, 
+            last_name, 
+            role, 
+            coach_id,
+            coach:coach_id (
+              first_name,
+              last_name
+            )
+          `)
           .eq('id', user.id)
           .single();
         
@@ -41,7 +53,11 @@ const Profile: React.FC = () => {
           first_name: data?.first_name,
           last_name: data?.last_name,
           email: user.email || '',
-          role: data?.role || 'respondent'
+          role: data?.role || 'respondent',
+          coach_id: data?.coach_id,
+          coach_name: data?.coach 
+            ? `${data.coach.first_name || ''} ${data.coach.last_name || ''}`.trim()
+            : null
         };
         
         setProfile(profileData);
@@ -146,6 +162,12 @@ const Profile: React.FC = () => {
             <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 capitalize">
               {profile.role}
             </div>
+            {profile.coach_name && (
+              <div className="mt-2">
+                <p className="text-sm text-gray-500">Coach</p>
+                <p className="text-sm font-medium text-gray-700">{profile.coach_name}</p>
+              </div>
+            )}
           </div>
         </div>
         
