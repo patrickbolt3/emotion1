@@ -188,8 +188,14 @@ const Results: React.FC = () => {
         if (profileError) throw profileError;
         setUserProfile(profileData);
 
+        // Debug: Log client's coach_id
+        console.log('Client profile data:', profileData);
+        console.log('Client coach_id:', profileData?.coach_id);
+
         // Get coach's custom CTA settings if user has a coach
         if (profileData?.coach_id) {
+          console.log('Fetching coach data for coach_id:', profileData.coach_id);
+          
           const { data: coachData, error: coachError } = await supabase
             .from('profiles')
             .select('custom_cta_label, custom_cta_url, first_name, last_name')
@@ -197,9 +203,16 @@ const Results: React.FC = () => {
             .eq('role', 'coach')
             .maybeSingle();
           
+          console.log('Coach query result:', { coachData, coachError });
+          
           if (!coachError && coachData) {
+            console.log('Setting coach profile:', coachData);
             setCoachProfile(coachData);
+          } else {
+            console.log('No coach data found or error occurred:', coachError);
           }
+        } else {
+          console.log('No coach_id found for this client');
         }
 
         // Get all harmonic states
