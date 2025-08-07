@@ -188,14 +188,8 @@ const Results: React.FC = () => {
         if (profileError) throw profileError;
         setUserProfile(profileData);
 
-        // Debug: Log client's coach_id
-        console.log('Client profile data:', profileData);
-        console.log('Client coach_id:', profileData?.coach_id);
-
         // Get coach's custom CTA settings if user has a coach
         if (profileData?.coach_id) {
-          console.log('Fetching coach data for coach_id:', profileData.coach_id);
-          
           const { data: coachData, error: coachError } = await supabase
             .from('profiles')
             .select('custom_cta_label, custom_cta_url, first_name, last_name')
@@ -203,16 +197,9 @@ const Results: React.FC = () => {
             .eq('role', 'coach')
             .maybeSingle();
           
-          console.log('Coach query result:', { coachData, coachError });
-          
           if (!coachError && coachData) {
-            console.log('Setting coach profile:', coachData);
             setCoachProfile(coachData);
-          } else {
-            console.log('No coach data found or error occurred:', coachError);
           }
-        } else {
-          console.log('No coach_id found for this client');
         }
 
         // Get all harmonic states
@@ -884,29 +871,6 @@ const Results: React.FC = () => {
                   </Button>
                 </div>
               </>
-            )}
-            
-            {/* Debug: Show what coach profile data we have */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <h4 className="font-bold text-yellow-800 mb-2">Debug Info (Development Only)</h4>
-                <p className="text-xs text-yellow-700">
-                  Coach Profile: {coachProfile ? 'Found' : 'Not found'}
-                </p>
-                {coachProfile && (
-                  <>
-                    <p className="text-xs text-yellow-700">
-                      CTA Label: "{coachProfile.custom_cta_label || 'Not set'}"
-                    </p>
-                    <p className="text-xs text-yellow-700">
-                      CTA URL: "{coachProfile.custom_cta_url || 'Not set'}"
-                    </p>
-                    <p className="text-xs text-yellow-700">
-                      Coach Name: "{coachProfile.first_name || ''} {coachProfile.last_name || ''}"
-                    </p>
-                  </>
-                )}
-              </div>
             )}
           </motion.div>
         </div>
