@@ -17,7 +17,7 @@ import {
   Activity,
   Zap,
   Copy,
-  Check
+  Check,
   Save,
   ExternalLink,
   Settings
