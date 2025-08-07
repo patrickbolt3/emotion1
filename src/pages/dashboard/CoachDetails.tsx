@@ -8,6 +8,7 @@ interface CoachProfile {
   id: string;
   first_name: string | null;
   last_name: string | null;
+  email: string;
   created_at: string;
   updated_at: string;
   trainer_id: string | null;
@@ -48,6 +49,7 @@ const CoachDetails: React.FC = () => {
             id,
             first_name,
             last_name,
+            email,
             created_at,
             updated_at,
             trainer_id,
@@ -210,6 +212,14 @@ const CoachDetails: React.FC = () => {
                 <p className="text-sm font-mono text-gray-900 break-all bg-gray-50 p-2 rounded">
                   {coach.id}
                 </p>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-500">Email</label>
+                <div className="flex items-center text-sm text-gray-900">
+                  <Mail className="h-4 w-4 mr-2" />
+                  {coach.email}
+                </div>
               </div>
               
               <div>

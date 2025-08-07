@@ -8,6 +8,7 @@ interface RespondentProfile {
   id: string;
   first_name: string | null;
   last_name: string | null;
+  email: string;
   created_at: string;
   updated_at: string;
   coach_id: string | null;
@@ -42,6 +43,7 @@ const RespondentDetails: React.FC = () => {
             id,
             first_name,
             last_name,
+            email,
             created_at,
             updated_at,
             coach_id,
@@ -194,6 +196,14 @@ const RespondentDetails: React.FC = () => {
                 <p className="text-sm font-mono text-gray-900 break-all bg-gray-50 p-2 rounded">
                   {respondent.id}
                 </p>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-500">Email</label>
+                <div className="flex items-center text-sm text-gray-900">
+                  <Mail className="h-4 w-4 mr-2" />
+                  {respondent.email}
+                </div>
               </div>
               
               <div>
