@@ -852,11 +852,6 @@ const Results: React.FC = () => {
             
             {coachProfile?.custom_cta_label && coachProfile?.custom_cta_url && (
               <>
-                {console.log('Rendering CTA section with:', { 
-                  label: coachProfile.custom_cta_label, 
-                  url: coachProfile.custom_cta_url,
-                  coachName: coachProfile.first_name + ' ' + coachProfile.last_name
-                })}
                 <h3 className="text-xl font-bold text-gray-900">Continue Your Journey</h3>
                 <div>
                   <p className="mt-2 text-gray-600">
@@ -889,6 +884,29 @@ const Results: React.FC = () => {
                   </Button>
                 </div>
               </>
+            )}
+            
+            {/* Debug: Show what coach profile data we have */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <h4 className="font-bold text-yellow-800 mb-2">Debug Info (Development Only)</h4>
+                <p className="text-xs text-yellow-700">
+                  Coach Profile: {coachProfile ? 'Found' : 'Not found'}
+                </p>
+                {coachProfile && (
+                  <>
+                    <p className="text-xs text-yellow-700">
+                      CTA Label: "{coachProfile.custom_cta_label || 'Not set'}"
+                    </p>
+                    <p className="text-xs text-yellow-700">
+                      CTA URL: "{coachProfile.custom_cta_url || 'Not set'}"
+                    </p>
+                    <p className="text-xs text-yellow-700">
+                      Coach Name: "{coachProfile.first_name || ''} {coachProfile.last_name || ''}"
+                    </p>
+                  </>
+                )}
+              </div>
             )}
           </motion.div>
         </div>
