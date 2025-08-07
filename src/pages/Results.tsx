@@ -837,55 +837,41 @@ const Results: React.FC = () => {
           >
             <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: dominantState.color }}></div>
             
-            <h3 className="text-xl font-bold text-gray-900">Continue Your Journey</h3>
-            {coachProfile?.custom_cta_label && coachProfile?.custom_cta_url ? (
-              <div>
-                <p className="mt-2 text-gray-600">
-                  Ready to take the next step in your emotional development journey?
-                </p>
-                {coachProfile.first_name && (
-                  <p className="mt-1 text-sm text-gray-500">
-                    Connect with your coach {coachProfile.first_name} {coachProfile.last_name}
+            {coachProfile?.custom_cta_label && coachProfile?.custom_cta_url && (
+              <>
+                <h3 className="text-xl font-bold text-gray-900">Continue Your Journey</h3>
+                <div>
+                  <p className="mt-2 text-gray-600">
+                    Ready to take the next step in your emotional development journey?
                   </p>
-                )}
-              </div>
-            ) : (
-              <p className="mt-2 text-gray-600">
-                Understanding your dominant state is just the beginning. Work with a coach to develop strategies for growth and transformation.
-              </p>
+                  {coachProfile.first_name && (
+                    <p className="mt-1 text-sm text-gray-500">
+                      Connect with your coach {coachProfile.first_name} {coachProfile.last_name}
+                    </p>
+                  )}
+                </div>
+                <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button 
+                    onClick={() => window.open(coachProfile.custom_cta_url!, '_blank')}
+                    rounded="full" 
+                    variant="gradient"
+                    className="px-8 shadow-lg"
+                  >
+                    {coachProfile.custom_cta_label}
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                  <Button 
+                    onClick={() => navigate('/dashboard')}
+                    rounded="full" 
+                    variant="outline"
+                    className="px-8"
+                  >
+                    <Home className="mr-2 h-4 w-4" />
+                    Back to Dashboard
+                  </Button>
+                </div>
+              </>
             )}
-            <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
-              {coachProfile?.custom_cta_label && coachProfile?.custom_cta_url ? (
-                <Button 
-                  onClick={() => window.open(coachProfile.custom_cta_url!, '_blank')}
-                  rounded="full" 
-                  variant="gradient"
-                  className="px-8 shadow-lg"
-                >
-                  {coachProfile.custom_cta_label}
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              ) : (
-                <Button 
-                  onClick={() => navigate('/dashboard/new-assessment')}
-                  rounded="full" 
-                  variant="gradient"
-                  className="px-8 shadow-lg"
-                >
-                  Take Another Assessment
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              )}
-              <Button 
-                onClick={() => navigate('/dashboard')}
-                rounded="full" 
-                variant="outline"
-                className="px-8"
-              >
-                <Home className="mr-2 h-4 w-4" />
-                Back to Dashboard
-              </Button>
-            </div>
           </motion.div>
         </div>
       </main>
