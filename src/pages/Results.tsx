@@ -195,7 +195,7 @@ const Results: React.FC = () => {
             .select('custom_cta_label, custom_cta_url, first_name, last_name')
             .eq('id', profileData.coach_id)
             .eq('role', 'coach')
-            .single();
+            .maybeSingle();
           
           if (!coachError && coachData) {
             setCoachProfile(coachData);
