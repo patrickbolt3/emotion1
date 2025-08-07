@@ -852,6 +852,11 @@ const Results: React.FC = () => {
             
             {coachProfile?.custom_cta_label && coachProfile?.custom_cta_url && (
               <>
+                {console.log('Rendering CTA section with:', { 
+                  label: coachProfile.custom_cta_label, 
+                  url: coachProfile.custom_cta_url,
+                  coachName: coachProfile.first_name + ' ' + coachProfile.last_name
+                })}
                 <h3 className="text-xl font-bold text-gray-900">Continue Your Journey</h3>
                 <div>
                   <p className="mt-2 text-gray-600">
