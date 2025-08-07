@@ -18,6 +18,9 @@ import {
   Zap,
   Copy,
   Check
+  Save,
+  ExternalLink,
+  Settings
 } from 'lucide-react';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import BarChart from '../../components/charts/BarChart';
@@ -55,6 +58,10 @@ const CoachDashboard: React.FC = () => {
   const { user } = useAuth();
   const [clients, setClients] = useState<ClientProfile[]>([]);
   const [assessmentCode, setAssessmentCode] = useState<string | null>(null);
+  const [customCtaLabel, setCustomCtaLabel] = useState('');
+  const [customCtaUrl, setCustomCtaUrl] = useState('');
+  const [savingCta, setSavingCta] = useState(false);
+  const [ctaMessage, setCtaMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showCopyToast, setShowCopyToast] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [analytics, setAnalytics] = useState<CoachAnalytics>({
@@ -88,7 +95,7 @@ const CoachDashboard: React.FC = () => {
       // Get coach's assessment code
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('assessment_code')
+        .select('assessment_code, custom_cta_label, custom_cta_url')
         .eq('id', user.id)
         .eq('role', 'coach')
         .single();
@@ -96,6 +103,8 @@ const CoachDashboard: React.FC = () => {
       if (profileError) throw profileError;
       
       setAssessmentCode(profileData?.assessment_code || null);
+      setCustomCtaLabel(profileData?.custom_cta_label || '');
+      setCustomCtaUrl(profileData?.custom_cta_url || '');
     } catch (err) {
       console.error('Error fetching coach profile:', err);
     }
@@ -262,6 +271,46 @@ const CoachDashboard: React.FC = () => {
     fetchClients();
   };
   
+  const handleSaveCtaSettings = async () => {
+    if (!user) return;
+    
+    setSavingCta(true);
+    setCtaMessage(null);
+    
+    try {
+      // Validate URL if provided
+      if (customCtaUrl && customCtaUrl.trim()) {
+        try {
+          new URL(customCtaUrl);
+        } catch {
+          setCtaMessage({ type: 'error', text: 'Please enter a valid URL (e.g., https://example.com)' });
+          setSavingCta(false);
+          return;
+        }
+      }
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          custom_cta_label: customCtaLabel.trim() || null,
+          custom_cta_url: customCtaUrl.trim() || null
+        })
+        .eq('id', user.id);
+      
+      if (error) throw error;
+      
+      setCtaMessage({ type: 'success', text: 'Call-to-action settings saved successfully!' });
+      
+      // Clear message after 3 seconds
+      setTimeout(() => setCtaMessage(null), 3000);
+    } catch (err: any) {
+      console.error('Error saving CTA settings:', err);
+      setCtaMessage({ type: 'error', text: err.message || 'Failed to save settings' });
+    } finally {
+      setSavingCta(false);
+    }
+  };
+  
   useEffect(() => {
     fetchCoachProfile();
     fetchClients();
@@ -377,6 +426,108 @@ const CoachDashboard: React.FC = () => {
       )}
 
       {/* Key Metrics */}
+      
+      {/* Custom CTA Settings */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+              <Settings className="h-5 w-5 mr-2" />
+              Client Call-to-Action Settings
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Customize the button that appears on your clients' results pages
+            </p>
+          </div>
+        </div>
+        
+        {ctaMessage && (
+          <div className={`mb-4 p-4 rounded-md flex items-center ${
+            ctaMessage.type === 'success' 
+              ? 'bg-green-50 border border-green-200 text-green-700' 
+              : 'bg-red-50 border border-red-200 text-red-700'
+          }`}>
+            {ctaMessage.type === 'success' ? (
+              <CheckCircle className="h-5 w-5 mr-2" />
+            ) : (
+              <AlertCircle className="h-5 w-5 mr-2" />
+            )}
+            {ctaMessage.text}
+          </div>
+        )}
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label htmlFor="ctaLabel" className="block text-sm font-medium text-gray-700 mb-2">
+              Button Label
+            </label>
+            <input
+              id="ctaLabel"
+              type="text"
+              value={customCtaLabel}
+              onChange={(e) => setCustomCtaLabel(e.target.value)}
+              placeholder="e.g., Book Free Discovery Call"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              maxLength={50}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Leave empty to show default "Take Another Assessment" button
+            </p>
+          </div>
+          
+          <div>
+            <label htmlFor="ctaUrl" className="block text-sm font-medium text-gray-700 mb-2">
+              Button URL
+            </label>
+            <input
+              id="ctaUrl"
+              type="url"
+              value={customCtaUrl}
+              onChange={(e) => setCustomCtaUrl(e.target.value)}
+              placeholder="https://calendly.com/your-link"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Full URL including https://
+            </p>
+          </div>
+        </div>
+        
+        <div className="mt-6 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            {customCtaLabel && customCtaUrl && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-800 font-medium mb-1">Preview:</p>
+                <div className="flex items-center space-x-2">
+                  <div className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium">
+                    {customCtaLabel}
+                  </div>
+                  <ExternalLink className="h-4 w-4 text-blue-600" />
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <Button
+            onClick={handleSaveCtaSettings}
+            disabled={savingCta}
+            className="flex items-center"
+          >
+            {savingCta ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save CTA Settings
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="Total Clients"

@@ -57,6 +57,8 @@ export interface Database {
           trainer_id: string | null
           assessment_code: string | null
           is_password_updated: boolean
+          custom_cta_label: string | null
+          custom_cta_url: string | null
         }
         Insert: {
           id: string
@@ -70,6 +72,8 @@ export interface Database {
           trainer_id?: string | null
           assessment_code?: string | null
           is_password_updated?: boolean
+          custom_cta_label?: string | null
+          custom_cta_url?: string | null
         }
         Update: {
           id?: string
@@ -83,6 +87,8 @@ export interface Database {
           trainer_id?: string | null
           assessment_code?: string | null
           is_password_updated?: boolean
+          custom_cta_label?: string | null
+          custom_cta_url?: string | null
         }
         Relationships: [
           {

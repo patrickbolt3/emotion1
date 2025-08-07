@@ -43,6 +43,14 @@ interface UserProfile {
   first_name: string | null;
   last_name: string | null;
   email: string;
+  coach_id: string | null;
+}
+
+interface CoachProfile {
+  custom_cta_label: string | null;
+  custom_cta_url: string | null;
+  first_name: string | null;
+  last_name: string | null;
 }
 
 interface StateScore {
@@ -141,6 +149,7 @@ const Results: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [responses, setResponses] = useState<Response[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [coachProfile, setCoachProfile] = useState<CoachProfile | null>(null);
   const [stateDetails, setStateDetails] = useState<HarmonicStateDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -172,12 +181,26 @@ const Results: React.FC = () => {
         // Get user profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('first_name, last_name, email')
+          .select('first_name, last_name, email, coach_id')
           .eq('id', assessmentData.user_id)
           .single();
 
         if (profileError) throw profileError;
         setUserProfile(profileData);
+
+        // Get coach's custom CTA settings if user has a coach
+        if (profileData?.coach_id) {
+          const { data: coachData, error: coachError } = await supabase
+            .from('profiles')
+            .select('custom_cta_label, custom_cta_url, first_name, last_name')
+            .eq('id', profileData.coach_id)
+            .eq('role', 'coach')
+            .single();
+          
+          if (!coachError && coachData) {
+            setCoachProfile(coachData);
+          }
+        }
 
         // Get all harmonic states
         const { data: statesData, error: statesError } = await supabase
@@ -815,19 +838,44 @@ const Results: React.FC = () => {
             <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: dominantState.color }}></div>
             
             <h3 className="text-xl font-bold text-gray-900">Continue Your Journey</h3>
-            <p className="mt-2 text-gray-600">
-              Understanding your dominant state is just the beginning. Work with a coach to develop strategies for growth and transformation.
-            </p>
+            {coachProfile?.custom_cta_label && coachProfile?.custom_cta_url ? (
+              <div>
+                <p className="mt-2 text-gray-600">
+                  Ready to take the next step in your emotional development journey?
+                </p>
+                {coachProfile.first_name && (
+                  <p className="mt-1 text-sm text-gray-500">
+                    Connect with your coach {coachProfile.first_name} {coachProfile.last_name}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="mt-2 text-gray-600">
+                Understanding your dominant state is just the beginning. Work with a coach to develop strategies for growth and transformation.
+              </p>
+            )}
             <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                onClick={() => navigate('/dashboard/new-assessment')}
-                rounded="full" 
-                variant="gradient"
-                className="px-8 shadow-lg"
-              >
-                Take Another Assessment
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
+              {coachProfile?.custom_cta_label && coachProfile?.custom_cta_url ? (
+                <Button 
+                  onClick={() => window.open(coachProfile.custom_cta_url!, '_blank')}
+                  rounded="full" 
+                  variant="gradient"
+                  className="px-8 shadow-lg"
+                >
+                  {coachProfile.custom_cta_label}
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => navigate('/dashboard/new-assessment')}
+                  rounded="full" 
+                  variant="gradient"
+                  className="px-8 shadow-lg"
+                >
+                  Take Another Assessment
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              )}
               <Button 
                 onClick={() => navigate('/dashboard')}
                 rounded="full" 
