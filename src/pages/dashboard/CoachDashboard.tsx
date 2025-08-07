@@ -277,14 +277,33 @@ const CoachDashboard: React.FC = () => {
   const handleSaveCtaSettings = async () => {
     if (!user) return;
     
+   // Validation: Both fields must be filled or both must be empty
+   const labelTrimmed = customCtaLabel.trim();
+   const urlTrimmed = customCtaUrl.trim();
+   
+   if ((labelTrimmed && !urlTrimmed) || (!labelTrimmed && urlTrimmed)) {
+     setCtaMessage({ type: 'error', text: 'Both Button Label and Button URL are required, or leave both empty for default behavior' });
+     return;
+   }
+   
+   if (labelTrimmed && !labelTrimmed.length) {
+     setCtaMessage({ type: 'error', text: 'Button Label cannot be empty' });
+     return;
+   }
+   
+   if (urlTrimmed && !urlTrimmed.length) {
+     setCtaMessage({ type: 'error', text: 'Button URL cannot be empty' });
+     return;
+   }
+   
     setSavingCta(true);
     setCtaMessage(null);
     
     try {
-      // Validate URL if provided
-      if (customCtaUrl && customCtaUrl.trim()) {
+     // Validate URL format if provided
+     if (urlTrimmed) {
         try {
-          new URL(customCtaUrl);
+         new URL(urlTrimmed);
         } catch {
           setCtaMessage({ type: 'error', text: 'Please enter a valid URL (e.g., https://example.com)' });
           setSavingCta(false);
@@ -295,8 +314,8 @@ const CoachDashboard: React.FC = () => {
       const { error } = await supabase
         .from('profiles')
         .update({
-          custom_cta_label: customCtaLabel.trim() || null,
-          custom_cta_url: customCtaUrl.trim() || null
+         custom_cta_label: labelTrimmed || null,
+         custom_cta_url: urlTrimmed || null
         })
         .eq('id', user.id);
       
