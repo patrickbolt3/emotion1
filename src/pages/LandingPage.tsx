@@ -84,9 +84,6 @@ const LandingPage: React.FC = () => {
               </span>
             </div>
             <div className="flex gap-4">
-              <Link to="/emotional-states">
-                <Button variant="ghost">Harmonic States</Button>
-              </Link>
               <Link to="/questions-preview">
                 <Button variant="ghost">Preview Questions</Button>
               </Link>
