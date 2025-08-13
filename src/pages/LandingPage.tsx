@@ -126,11 +126,6 @@ const LandingPage: React.FC = () => {
                   Take the Free Assessment <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/questions-preview">
-                <Button size="xl" variant="outline" rounded="full" className="px-8 py-4">
-                  Preview Questions
-                </Button>
-              </Link>
               <Link to="/results-preview">
                 <Button size="xl" variant="outline" rounded="full" className="px-6 py-4">
                   Sample Results
