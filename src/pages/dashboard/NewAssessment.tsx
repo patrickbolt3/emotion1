@@ -34,7 +34,7 @@ const NewAssessment: React.FC = () => {
   
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Take the Emotional Dynamics Assessment</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Take the Emotion Dynamics Assessment</h1>
       
       {error && (
         <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
@@ -47,10 +47,10 @@ const NewAssessment: React.FC = () => {
           <Brain className="h-16 w-16 text-blue-600" />
         </div>
         <h2 className="text-xl font-semibold text-gray-900 text-center mb-4">
-          Discover Your Dominant Emotional Pattern
+          Discover Your Dominant Emotion Pattern
         </h2>
         <p className="text-gray-600 text-center mb-8">
-          This assessment consists of 98 questions that will help identify your dominant emotional state and provide insights for growth and transformation.
+          This assessment consists of 98 questions that will help identify your dominant emotion state and provide insights for growth and transformation.
         </p>
         
         <Button

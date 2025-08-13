@@ -11,7 +11,7 @@ const EmotionalStatesPage: React.FC = () => {
         <div className="container mx-auto px-4 flex items-center justify-between">
           <Link to="/" className="flex items-center">
             <Brain className="h-6 w-6 text-blue-600" />
-            <span className="ml-2 font-semibold text-gray-900">Emotional Dynamics Indicator™</span>
+            <span className="ml-2 font-semibold text-gray-900">Emotion Dynamics Indicator™</span>
           </Link>
           <Link to="/">
             <Button variant="ghost" size="sm">
@@ -24,8 +24,9 @@ const EmotionalStatesPage: React.FC = () => {
 
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-center mb-8">Emotional Dynamics Indicator™ - Master Table of Harmonic States</h1>
+        <h1 className="text-3xl font-bold text-center mb-8">Emotion Dynamics Indicator™ - Master Table of Harmonic States</h1>
         <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-          The spectrum of emotional states arranged from lowest frequency (Apathy) to highest frequency (Pure Awareness).
+          The spectrum of emotion states arranged from lowest frequency (Apathy) to highest frequency (Pure Awareness).
           Each state has its characteristic beliefs, behaviors, and communication patterns.
         </p>
 

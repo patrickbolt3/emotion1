@@ -434,7 +434,7 @@ const Results: React.FC = () => {
               Back to Dashboard
             </Button>
             <Brain className="h-6 w-6" style={{ color: dominantState.color }} />
-            <span className="ml-2 font-semibold text-gray-900">Emotional Dynamics Indicator™</span>
+            <span className="ml-2 font-semibold text-gray-900">Emotion Dynamics Indicator™</span>
           </div>
           <div className="flex space-x-2">
             <PDFGenerator assessmentData={pdfData} />
@@ -456,7 +456,7 @@ const Results: React.FC = () => {
               transition={{ duration: 0.5 }}
               className="text-3xl sm:text-4xl font-bold text-gray-900"
             >
-              Your Emotional Dynamics Results
+              Your Emotion Dynamics Results
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: -20 }}

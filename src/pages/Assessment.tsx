@@ -254,7 +254,7 @@ const Assessment: React.FC = () => {
               Back
             </Button>
             <Brain className="h-6 w-6" style={{ color: activeColor }} />
-            <span className="ml-2 font-semibold text-gray-900">Emotional Dynamics Indicator™</span>
+            <span className="ml-2 font-semibold text-gray-900">Emotion Dynamics Indicator™</span>
           </div>
           <div className="text-sm font-medium" style={{ color: activeColor }}>
             Question {currentQuestionIndex + 1} of {totalQuestions}

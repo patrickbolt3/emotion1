@@ -212,7 +212,7 @@ const RespondentDashboard: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Your Analytics</h1>
-          <p className="text-gray-600 mt-1">Track your emotional dynamics journey and growth</p>
+          <p className="text-gray-600 mt-1">Track your emotion dynamics journey and growth</p>
         </div>
         <Link to="/dashboard/new-assessment">
           <Button>
@@ -380,7 +380,7 @@ const RespondentDashboard: React.FC = () => {
             <Brain className="h-12 w-12 mx-auto mb-4 text-gray-300" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No assessments yet</h3>
             <p className="text-gray-600 mb-6">
-              Take your first Emotional Dynamics assessment to discover your dominant emotional pattern.
+              Take your first Emotion Dynamics assessment to discover your dominant emotion pattern.
             </p>
             <Link to="/dashboard/new-assessment">
               <Button>

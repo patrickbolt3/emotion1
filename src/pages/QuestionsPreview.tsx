@@ -136,7 +136,7 @@ const QuestionsPreview: React.FC = () => {
         <div className="container mx-auto px-4 flex items-center justify-between">
           <Link to="/" className="flex items-center">
             <Brain className="h-6 w-6" style={{ color: completed ? "#4F46E5" : currentQuestion.color }} />
-            <span className="ml-2 font-semibold text-gray-900">Emotional Dynamics Indicator™</span>
+            <span className="ml-2 font-semibold text-gray-900">Emotion Dynamics Indicator™</span>
           </Link>
           <div className="text-sm font-medium" style={{ color: currentQuestion.color }}>
             {completed ? "Preview Completed" : `Question ${currentQuestionIndex + 1} of ${totalQuestions}`}

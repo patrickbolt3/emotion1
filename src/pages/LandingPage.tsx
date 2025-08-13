@@ -80,7 +80,7 @@ const LandingPage: React.FC = () => {
             <div className="flex-shrink-0 flex items-center">
               <Brain className="h-8 w-8 text-gradient-start animate-pulse-slow" />
               <span className="ml-2 text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-gradient-start to-gradient-end">
-                Emotional Dynamics Indicator™
+                Emotion Dynamics Indicator™
               </span>
             </div>
             <div className="flex gap-4">
@@ -108,7 +108,7 @@ const LandingPage: React.FC = () => {
               transition={{ duration: 0.8, delay: 0.2 }}
             >
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 tracking-tight leading-tight">
-                Discover the <span className="bg-clip-text text-transparent bg-gradient-to-r from-gradient-start to-gradient-end">emotional frequency</span> you lead from
+                Discover the <span className="bg-clip-text text-transparent bg-gradient-to-r from-gradient-start to-gradient-end">emotion frequency</span> you lead from
               </h1>
               <p className="mt-6 text-xl text-gray-600">
                 —and how to evolve it.
@@ -158,7 +158,7 @@ const LandingPage: React.FC = () => {
       <section className="py-12 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-10">
-            The <span className="bg-clip-text text-transparent bg-gradient-to-r from-gradient-start to-gradient-end">Harmonic Scale</span> of Emotional States
+            The <span className="bg-clip-text text-transparent bg-gradient-to-r from-gradient-start to-gradient-end">Harmonic Scale</span> of Emotion States
           </h2>
           
           <motion.div 
@@ -195,7 +195,7 @@ const LandingPage: React.FC = () => {
           </motion.div>
           
           <p className="text-center text-gray-600 max-w-2xl mx-auto">
-            The Emotional Dynamics Indicator helps you identify which of these 14 harmonic states is currently your dominant emotional pattern.
+            The Emotion Dynamics Indicator helps you identify which of these 14 harmonic states is currently your dominant emotion pattern.
           </p>
           
           <div className="flex justify-center mt-8">
@@ -214,9 +214,9 @@ const LandingPage: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-radial from-white/80 to-gray-50/30"></div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">What is the Emotional Dynamics Indicator™?</h2>
+            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">What is the Emotion Dynamics Indicator™?</h2>
             <p className="mt-4 text-lg text-gray-600">
-              A modern coaching tool based on the Harmonic Scale that helps you understand your dominant emotional pattern and gives coaches the tools to support your transformation.
+              A modern coaching tool based on the Harmonic Scale that helps you understand your dominant emotion pattern and gives coaches the tools to support your transformation.
             </p>
           </div>
           
@@ -533,7 +533,7 @@ const LandingPage: React.FC = () => {
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              Ready to discover your emotional dynamics?
+              Ready to discover your emotion dynamics?
             </motion.h2>
             <motion.p 
               className="mt-4 text-lg text-blue-100"
@@ -542,7 +542,7 @@ const LandingPage: React.FC = () => {
               transition={{ duration: 0.8, delay: 0.1 }}
               viewport={{ once: true }}
             >
-              Take the free assessment and start your journey to emotional mastery.
+              Take the free assessment and start your journey to emotion mastery.
             </motion.p>
             <motion.div 
               className="mt-8 flex flex-wrap justify-center gap-4"
@@ -590,11 +590,11 @@ const LandingPage: React.FC = () => {
               <div className="flex items-center">
                 <Brain className="h-6 w-6 text-gradient-start" />
                 <span className="ml-2 text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-gradient-start to-gradient-end">
-                  Emotional Dynamics Indicator™
+                  Emotion Dynamics Indicator™
                 </span>
               </div>
               <p className="mt-4 text-gray-400 text-sm">
-                Discover the emotional frequency you lead from—and how to evolve it.
+                Discover the emotion frequency you lead from—and how to evolve it.
               </p>
             </div>
             <div>
@@ -624,7 +624,7 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="mt-12 border-t border-gray-800 pt-8">
             <p className="text-gray-400 text-sm text-center">
-              &copy; {new Date().getFullYear()} Emotional Dynamics Indicator™. All rights reserved.
+              &copy; {new Date().getFullYear()} Emotion Dynamics Indicator™. All rights reserved.
             </p>
           </div>
         </div>
